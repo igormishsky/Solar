@@ -7,6 +7,7 @@ import {
   FlatList,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Plus, FolderKanban, ChevronRight, Calendar } from 'lucide-react-native';
 
@@ -32,15 +33,16 @@ type Project = {
 
 export default function ProjectsScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { isRTL } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const { data: projects = [], isLoading } = useProjects();
+  const { data: projects = [], isLoading } = useProjects({ query: searchQuery });
 
   const renderProjectItem = ({ item }: { item: Project }) => {
     const statusColors = getStatusColors(item.status);
 
     return (
-      <TouchableOpacity style={sharedStyles.card}>
+      <TouchableOpacity style={sharedStyles.card} onPress={() => router.push(`/project/${item.id}`)}>
         <View style={[getFlexDirection(isRTL), { justifyContent: 'space-between', alignItems: 'center' }]}>
           <View style={[getFlexDirection(isRTL), { alignItems: 'center', flex: 1 }]}>
             <View style={[sharedStyles.iconContainer, getMarginStart(isRTL, 12)]}>

@@ -7,6 +7,7 @@ import {
   FlatList,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Plus, ClipboardList, ChevronRight, Clock } from 'lucide-react-native';
 
@@ -32,9 +33,10 @@ type Task = {
 
 export default function TasksScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { isRTL } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const { data: tasks = [], isLoading } = useTasks();
+  const { data: tasks = [], isLoading } = useTasks({ query: searchQuery });
 
   const renderTaskItem = ({ item }: { item: Task }) => {
     const priorityColors = getPriorityColors(item.priority);
@@ -45,6 +47,7 @@ export default function TasksScreen() {
           sharedStyles.card,
           { borderLeftWidth: 4, borderLeftColor: priorityColors.text },
         ]}
+        onPress={() => router.push(`/task/${item.id}`)}
       >
         <View style={[getFlexDirection(isRTL), { justifyContent: 'space-between', alignItems: 'center' }]}>
           <View style={{ flex: 1 }}>

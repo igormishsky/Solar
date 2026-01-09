@@ -7,6 +7,7 @@ import {
   FlatList,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Plus, User, Users, Phone, Mail, ChevronRight } from 'lucide-react-native';
 
@@ -31,12 +32,13 @@ type Customer = {
 
 export default function CustomersScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { isRTL } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const { data: customers = [], isLoading } = useCustomers();
+  const { data: customers = [], isLoading } = useCustomers({ query: searchQuery });
 
   const renderCustomerItem = ({ item }: { item: Customer }) => (
-    <TouchableOpacity style={sharedStyles.card}>
+    <TouchableOpacity style={sharedStyles.card} onPress={() => router.push(`/customer/${item.id}`)}>
       <View style={[getFlexDirection(isRTL), { justifyContent: 'space-between', alignItems: 'center' }]}>
         <View style={[getFlexDirection(isRTL), { alignItems: 'center', flex: 1 }]}>
           <View style={[sharedStyles.iconContainer, getMarginStart(isRTL, 12)]}>
