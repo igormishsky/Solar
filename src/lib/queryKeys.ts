@@ -1,3 +1,35 @@
+/**
+ * React Query key factory for consistent cache management.
+ * Uses a helper function to reduce repetition while maintaining type safety.
+ */
+
+type QueryKeyParams = string | number | object | undefined;
+
+/**
+ * Creates a query key factory for a given entity.
+ * Reduces boilerplate while maintaining the same functionality.
+ */
+const createEntityKeys = <T extends string>(entity: T) => ({
+  all: [entity] as const,
+  list: (filters?: object) => [entity, 'list', filters] as const,
+  detail: (id: string) => [entity, 'detail', id] as const,
+  search: (query: string) => [entity, 'search', query] as const,
+});
+
+/**
+ * Creates extended query keys with additional custom keys.
+ */
+const createEntityKeysWithExtras = <
+  T extends string,
+  E extends Record<string, (...args: QueryKeyParams[]) => readonly unknown[]>
+>(
+  entity: T,
+  extras: (base: T) => E
+) => ({
+  ...createEntityKeys(entity),
+  ...extras(entity),
+});
+
 export const queryKeys = {
   // Auth & User
   user: {
@@ -6,51 +38,34 @@ export const queryKeys = {
   },
 
   // Customers
-  customers: {
-    all: ['customers'] as const,
-    list: (filters?: object) => ['customers', 'list', filters] as const,
-    detail: (id: string) => ['customers', 'detail', id] as const,
-    search: (query: string) => ['customers', 'search', query] as const,
-  },
+  customers: createEntityKeys('customers'),
 
-  // Projects
-  projects: {
-    all: ['projects'] as const,
-    list: (filters?: object) => ['projects', 'list', filters] as const,
-    detail: (id: string) => ['projects', 'detail', id] as const,
-    byCustomer: (customerId: string) => ['projects', 'customer', customerId] as const,
-    stages: (projectId: string) => ['projects', 'stages', projectId] as const,
-  },
+  // Projects - with extra keys for related queries
+  projects: createEntityKeysWithExtras('projects', (base) => ({
+    byCustomer: (customerId: string) => [base, 'customer', customerId] as const,
+    stages: (projectId: string) => [base, 'stages', projectId] as const,
+  })),
 
-  // Tasks
-  tasks: {
-    all: ['tasks'] as const,
-    list: (filters?: object) => ['tasks', 'list', filters] as const,
-    detail: (id: string) => ['tasks', 'detail', id] as const,
-    byProject: (projectId: string) => ['tasks', 'project', projectId] as const,
-    byAssignee: (userId: string) => ['tasks', 'assignee', userId] as const,
-    upcoming: (days?: number) => ['tasks', 'upcoming', days] as const,
-  },
+  // Tasks - with extra keys for assignments and scheduling
+  tasks: createEntityKeysWithExtras('tasks', (base) => ({
+    byProject: (projectId: string) => [base, 'project', projectId] as const,
+    byAssignee: (userId: string) => [base, 'assignee', userId] as const,
+    upcoming: (days?: number) => [base, 'upcoming', days] as const,
+  })),
 
-  // Professionals
-  professionals: {
-    all: ['professionals'] as const,
-    list: (filters?: object) => ['professionals', 'list', filters] as const,
-    detail: (id: string) => ['professionals', 'detail', id] as const,
-    byType: (type: string) => ['professionals', 'type', type] as const,
-    expiringLicenses: (days?: number) => ['professionals', 'expiring', days] as const,
-  },
+  // Professionals - with extra keys for type filtering and license tracking
+  professionals: createEntityKeysWithExtras('professionals', (base) => ({
+    byType: (type: string) => [base, 'type', type] as const,
+    expiringLicenses: (days?: number) => [base, 'expiring', days] as const,
+  })),
 
-  // Forms
-  forms: {
-    all: ['forms'] as const,
-    list: (filters?: object) => ['forms', 'list', filters] as const,
-    detail: (id: string) => ['forms', 'detail', id] as const,
-    byProject: (projectId: string) => ['forms', 'project', projectId] as const,
-    templates: ['forms', 'templates'] as const,
-  },
+  // Forms - with extra keys for project forms and templates
+  forms: createEntityKeysWithExtras('forms', (base) => ({
+    byProject: (projectId: string) => [base, 'project', projectId] as const,
+    templates: [base, 'templates'] as const,
+  })),
 
-  // Documents
+  // Documents - with extra keys for project and customer documents
   documents: {
     all: ['documents'] as const,
     list: (filters?: object) => ['documents', 'list', filters] as const,
@@ -68,7 +83,15 @@ export const queryKeys = {
   // Monitoring (Phase 2)
   monitoring: {
     systems: ['monitoring', 'systems'] as const,
-    performance: (systemId: string, range?: string) => ['monitoring', 'performance', systemId, range] as const,
+    performance: (systemId: string, range?: string) =>
+      ['monitoring', 'performance', systemId, range] as const,
     alerts: ['monitoring', 'alerts'] as const,
   },
 };
+
+/**
+ * Helper to invalidate all queries for an entity.
+ * Usage: queryClient.invalidateQueries({ queryKey: queryKeys.customers.all })
+ */
+export const invalidateEntity = (entity: keyof typeof queryKeys) =>
+  queryKeys[entity as 'customers'].all;

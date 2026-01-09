@@ -2,115 +2,60 @@ import { useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TextInput,
   TouchableOpacity,
   FlatList,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Plus, User, Phone, Mail, ChevronRight } from 'lucide-react-native';
+import { Search, Plus, User, Users, Phone, Mail, ChevronRight } from 'lucide-react-native';
 
 import { useLanguageStore } from '@/stores/useLanguageStore';
+import { useCustomers } from '@/hooks';
+import {
+  sharedStyles,
+  colors,
+  getFlexDirection,
+  getTextAlign,
+  getMarginStart,
+} from '@/styles';
+
+type Customer = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone_primary: string;
+  email: string | null;
+  customer_type: string;
+};
 
 export default function CustomersScreen() {
   const { t } = useTranslation();
   const { isRTL } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: customers = [], isLoading } = useCustomers();
 
-  // Placeholder data - will be replaced with React Query
-  const customers: Array<{
-    id: string;
-    first_name: string;
-    last_name: string;
-    phone_primary: string;
-    email: string | null;
-    customer_type: string;
-  }> = [];
-
-  const renderCustomerItem = ({ item }: { item: typeof customers[0] }) => (
-    <TouchableOpacity
-      style={{
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-      }}
-    >
-      <View
-        style={{
-          flexDirection: isRTL ? 'row-reverse' : 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', flex: 1 }}>
-          <View
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              backgroundColor: '#fff7ed',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginRight: isRTL ? 0 : 12,
-              marginLeft: isRTL ? 12 : 0,
-            }}
-          >
-            <User size={24} color="#f97316" />
+  const renderCustomerItem = ({ item }: { item: Customer }) => (
+    <TouchableOpacity style={sharedStyles.card}>
+      <View style={[getFlexDirection(isRTL), { justifyContent: 'space-between', alignItems: 'center' }]}>
+        <View style={[getFlexDirection(isRTL), { alignItems: 'center', flex: 1 }]}>
+          <View style={[sharedStyles.iconContainer, getMarginStart(isRTL, 12)]}>
+            <User size={24} color={colors.primary} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: '600',
-                color: '#1f2937',
-                textAlign: isRTL ? 'right' : 'left',
-              }}
-            >
+            <Text style={[sharedStyles.title, getTextAlign(isRTL)]}>
               {item.first_name} {item.last_name}
             </Text>
-            <View
-              style={{
-                flexDirection: isRTL ? 'row-reverse' : 'row',
-                alignItems: 'center',
-                marginTop: 4,
-              }}
-            >
-              <Phone size={14} color="#9ca3af" />
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: '#6b7280',
-                  marginLeft: isRTL ? 0 : 4,
-                  marginRight: isRTL ? 4 : 0,
-                }}
-              >
+            <View style={[getFlexDirection(isRTL), { alignItems: 'center', marginTop: 4 }]}>
+              <Phone size={14} color={colors.gray[400]} />
+              <Text style={[sharedStyles.subtitle, getMarginStart(isRTL, 4)]}>
                 {item.phone_primary}
               </Text>
             </View>
             {item.email && (
-              <View
-                style={{
-                  flexDirection: isRTL ? 'row-reverse' : 'row',
-                  alignItems: 'center',
-                  marginTop: 2,
-                }}
-              >
-                <Mail size={14} color="#9ca3af" />
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: '#6b7280',
-                    marginLeft: isRTL ? 0 : 4,
-                    marginRight: isRTL ? 4 : 0,
-                  }}
-                >
+              <View style={[getFlexDirection(isRTL), { alignItems: 'center', marginTop: 2 }]}>
+                <Mail size={14} color={colors.gray[400]} />
+                <Text style={[sharedStyles.subtitle, getMarginStart(isRTL, 4)]}>
                   {item.email}
                 </Text>
               </View>
@@ -119,7 +64,7 @@ export default function CustomersScreen() {
         </View>
         <ChevronRight
           size={20}
-          color="#9ca3af"
+          color={colors.gray[400]}
           style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
         />
       </View>
@@ -127,32 +72,13 @@ export default function CustomersScreen() {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f3f4f6' }} edges={['bottom']}>
-      <View style={{ flex: 1, padding: 16 }}>
+    <SafeAreaView style={sharedStyles.pageContainer} edges={['bottom']}>
+      <View style={sharedStyles.pageContent}>
         {/* Search Bar */}
-        <View
-          style={{
-            flexDirection: isRTL ? 'row-reverse' : 'row',
-            alignItems: 'center',
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            paddingHorizontal: 12,
-            marginBottom: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.1,
-            shadowRadius: 2,
-            elevation: 2,
-          }}
-        >
-          <Search size={20} color="#9ca3af" />
+        <View style={[sharedStyles.searchBar, getFlexDirection(isRTL)]}>
+          <Search size={20} color={colors.gray[400]} />
           <TextInput
-            style={{
-              flex: 1,
-              padding: 12,
-              fontSize: 16,
-              textAlign: isRTL ? 'right' : 'left',
-            }}
+            style={[sharedStyles.searchInput, getTextAlign(isRTL)]}
             placeholder={t('customers.searchCustomers')}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -160,27 +86,9 @@ export default function CustomersScreen() {
         </View>
 
         {/* Add Customer Button */}
-        <TouchableOpacity
-          style={{
-            flexDirection: isRTL ? 'row-reverse' : 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#f97316',
-            borderRadius: 12,
-            padding: 14,
-            marginBottom: 16,
-          }}
-        >
-          <Plus size={20} color="#fff" />
-          <Text
-            style={{
-              color: '#fff',
-              fontSize: 16,
-              fontWeight: '600',
-              marginLeft: isRTL ? 0 : 8,
-              marginRight: isRTL ? 8 : 0,
-            }}
-          >
+        <TouchableOpacity style={[sharedStyles.primaryButton, getFlexDirection(isRTL)]}>
+          <Plus size={20} color={colors.white} />
+          <Text style={[sharedStyles.primaryButtonText, getMarginStart(isRTL, 8)]}>
             {t('customers.addCustomer')}
           </Text>
         </TouchableOpacity>
@@ -194,21 +102,9 @@ export default function CustomersScreen() {
             showsVerticalScrollIndicator={false}
           />
         ) : (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <Users size={48} color="#d1d5db" />
-            <Text
-              style={{
-                fontSize: 16,
-                color: '#9ca3af',
-                marginTop: 16,
-              }}
-            >
+          <View style={sharedStyles.emptyState}>
+            <Users size={48} color={colors.gray[300]} />
+            <Text style={sharedStyles.emptyStateText}>
               {t('customers.noCustomers')}
             </Text>
           </View>

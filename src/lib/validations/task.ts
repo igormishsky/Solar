@@ -1,28 +1,23 @@
 import { z } from 'zod';
+import { field, enums } from './builders';
 
 export const taskSchema = z.object({
-  title: z
-    .string()
-    .min(1, 'Task title is required')
-    .max(200, 'Title must be 200 characters or less'),
-  description: z
-    .string()
-    .max(1000, 'Description must be 1000 characters or less')
-    .optional(),
-  project_id: z.string().uuid('Invalid project ID').optional().nullable(),
-  customer_id: z.string().uuid('Invalid customer ID').optional().nullable(),
-  assigned_to: z.string().uuid('Invalid user ID').optional().nullable(),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
-  status: z.enum(['pending', 'in_progress', 'completed']).default('pending'),
-  due_date: z.string().optional().nullable(),
+  title: field.required('Task title', 200),
+  description: field.notes(1000),
+  project_id: field.uuidOptional('project ID'),
+  customer_id: field.uuidOptional('customer ID'),
+  assigned_to: field.uuidOptional('user ID'),
+  priority: enums.taskPriority.default('medium'),
+  status: enums.taskStatus.default('pending'),
+  due_date: field.date(),
 });
 
 export type TaskFormData = z.infer<typeof taskSchema>;
 
 export const taskSearchSchema = z.object({
-  query: z.string().optional(),
-  status: z.enum(['pending', 'in_progress', 'completed']).optional(),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
+  query: field.query(),
+  status: enums.taskStatus.optional(),
+  priority: enums.taskPriority.optional(),
   assigned_to: z.string().uuid().optional(),
   project_id: z.string().uuid().optional(),
 });
@@ -30,7 +25,7 @@ export const taskSearchSchema = z.object({
 export type TaskSearchParams = z.infer<typeof taskSearchSchema>;
 
 export const taskStatusUpdateSchema = z.object({
-  status: z.enum(['pending', 'in_progress', 'completed']),
+  status: enums.taskStatus,
 });
 
 export type TaskStatusUpdate = z.infer<typeof taskStatusUpdateSchema>;
