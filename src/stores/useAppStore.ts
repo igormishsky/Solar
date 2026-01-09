@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { ModalIdType } from '@/constants';
 
 interface AppState {
   // Sidebar/Navigation
@@ -10,11 +11,12 @@ interface AppState {
   isGlobalLoading: boolean;
   setGlobalLoading: (loading: boolean) => void;
 
-  // Modal states
-  activeModal: string | null;
+  // Modal states - using typed modal IDs
+  activeModal: ModalIdType | null;
   modalData: Record<string, unknown> | null;
-  openModal: (modalId: string, data?: Record<string, unknown>) => void;
+  openModal: (modalId: ModalIdType, data?: Record<string, unknown>) => void;
   closeModal: () => void;
+  isModalOpen: (modalId: ModalIdType) => boolean;
 
   // Notifications
   notifications: Notification[];
@@ -32,7 +34,7 @@ interface Notification {
   duration?: number;
 }
 
-export const useAppStore = create<AppState>((set) => ({
+export const useAppStore = create<AppState>((set, get) => ({
   // Sidebar
   isSidebarOpen: true,
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
@@ -47,6 +49,7 @@ export const useAppStore = create<AppState>((set) => ({
   modalData: null,
   openModal: (modalId, data = {}) => set({ activeModal: modalId, modalData: data }),
   closeModal: () => set({ activeModal: null, modalData: null }),
+  isModalOpen: (modalId) => get().activeModal === modalId,
 
   // Notifications
   notifications: [],
@@ -79,6 +82,7 @@ export const useModal = () => useAppStore((state) => ({
   modalData: state.modalData,
   open: state.openModal,
   close: state.closeModal,
+  isOpen: state.isModalOpen,
 }));
 
 export const useNotifications = () => useAppStore((state) => ({

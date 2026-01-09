@@ -8,191 +8,93 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Plus, ClipboardList, ChevronRight, Clock, AlertCircle } from 'lucide-react-native';
+import { Search, Plus, ClipboardList, ChevronRight, Clock } from 'lucide-react-native';
 
 import { useLanguageStore } from '@/stores/useLanguageStore';
-import { getPriorityColor } from '@/lib/utils';
+import { useTasks } from '@/hooks';
+import {
+  sharedStyles,
+  colors,
+  getFlexDirection,
+  getTextAlign,
+  getMarginStart,
+  getPriorityColors,
+} from '@/styles';
+
+type Task = {
+  id: string;
+  title: string;
+  description?: string;
+  priority: string;
+  status: string;
+  due_date?: string;
+};
 
 export default function TasksScreen() {
   const { t } = useTranslation();
   const { isRTL } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: tasks = [], isLoading } = useTasks();
 
-  // Placeholder data - will be replaced with React Query
-  const tasks: Array<{
-    id: string;
-    title: string;
-    description?: string;
-    priority: string;
-    status: string;
-    due_date?: string;
-  }> = [];
+  const renderTaskItem = ({ item }: { item: Task }) => {
+    const priorityColors = getPriorityColors(item.priority);
 
-  const getPriorityBgColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent':
-        return '#fef2f2';
-      case 'high':
-        return '#fff7ed';
-      case 'medium':
-        return '#eff6ff';
-      default:
-        return '#f3f4f6';
-    }
-  };
-
-  const getPriorityTextColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent':
-        return '#dc2626';
-      case 'high':
-        return '#ea580c';
-      case 'medium':
-        return '#2563eb';
-      default:
-        return '#6b7280';
-    }
-  };
-
-  const renderTaskItem = ({ item }: { item: typeof tasks[0] }) => (
-    <TouchableOpacity
-      style={{
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 12,
-        borderLeftWidth: 4,
-        borderLeftColor: getPriorityTextColor(item.priority),
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-      }}
-    >
-      <View
-        style={{
-          flexDirection: isRTL ? 'row-reverse' : 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
+    return (
+      <TouchableOpacity
+        style={[
+          sharedStyles.card,
+          { borderLeftWidth: 4, borderLeftColor: priorityColors.text },
+        ]}
       >
-        <View style={{ flex: 1 }}>
-          <View
-            style={{
-              flexDirection: isRTL ? 'row-reverse' : 'row',
-              alignItems: 'center',
-              marginBottom: 4,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: '600',
-                color: '#1f2937',
-                flex: 1,
-                textAlign: isRTL ? 'right' : 'left',
-              }}
-            >
-              {item.title}
-            </Text>
-          </View>
-          {item.description && (
-            <Text
-              style={{
-                fontSize: 14,
-                color: '#6b7280',
-                marginBottom: 8,
-                textAlign: isRTL ? 'right' : 'left',
-              }}
-              numberOfLines={2}
-            >
-              {item.description}
-            </Text>
-          )}
-          <View
-            style={{
-              flexDirection: isRTL ? 'row-reverse' : 'row',
-              alignItems: 'center',
-              gap: 12,
-            }}
-          >
-            <View
-              style={{
-                paddingHorizontal: 8,
-                paddingVertical: 4,
-                borderRadius: 4,
-                backgroundColor: getPriorityBgColor(item.priority),
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 12,
-                  fontWeight: '500',
-                  color: getPriorityTextColor(item.priority),
-                }}
-              >
-                {t(`tasks.priorities.${item.priority}`)}
+        <View style={[getFlexDirection(isRTL), { justifyContent: 'space-between', alignItems: 'center' }]}>
+          <View style={{ flex: 1 }}>
+            <View style={[getFlexDirection(isRTL), { alignItems: 'center', marginBottom: 4 }]}>
+              <Text style={[sharedStyles.title, { flex: 1 }, getTextAlign(isRTL)]}>
+                {item.title}
               </Text>
             </View>
-            {item.due_date && (
-              <View
-                style={{
-                  flexDirection: isRTL ? 'row-reverse' : 'row',
-                  alignItems: 'center',
-                }}
+            {item.description && (
+              <Text
+                style={[sharedStyles.subtitle, { marginBottom: 8 }, getTextAlign(isRTL)]}
+                numberOfLines={2}
               >
-                <Clock size={12} color="#9ca3af" />
-                <Text
-                  style={{
-                    fontSize: 12,
-                    color: '#9ca3af',
-                    marginLeft: isRTL ? 0 : 4,
-                    marginRight: isRTL ? 4 : 0,
-                  }}
-                >
-                  {item.due_date}
+                {item.description}
+              </Text>
+            )}
+            <View style={[getFlexDirection(isRTL), { alignItems: 'center', gap: 12 }]}>
+              <View style={[sharedStyles.badge, { backgroundColor: priorityColors.bg }]}>
+                <Text style={[sharedStyles.badgeText, { color: priorityColors.text }]}>
+                  {t(`tasks.priorities.${item.priority}`)}
                 </Text>
               </View>
-            )}
+              {item.due_date && (
+                <View style={[getFlexDirection(isRTL), { alignItems: 'center' }]}>
+                  <Clock size={12} color={colors.gray[400]} />
+                  <Text style={[sharedStyles.caption, getMarginStart(isRTL, 4)]}>
+                    {item.due_date}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
+          <ChevronRight
+            size={20}
+            color={colors.gray[400]}
+            style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
+          />
         </View>
-        <ChevronRight
-          size={20}
-          color="#9ca3af"
-          style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
-        />
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f3f4f6' }} edges={['bottom']}>
-      <View style={{ flex: 1, padding: 16 }}>
+    <SafeAreaView style={sharedStyles.pageContainer} edges={['bottom']}>
+      <View style={sharedStyles.pageContent}>
         {/* Search Bar */}
-        <View
-          style={{
-            flexDirection: isRTL ? 'row-reverse' : 'row',
-            alignItems: 'center',
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            paddingHorizontal: 12,
-            marginBottom: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.1,
-            shadowRadius: 2,
-            elevation: 2,
-          }}
-        >
-          <Search size={20} color="#9ca3af" />
+        <View style={[sharedStyles.searchBar, getFlexDirection(isRTL)]}>
+          <Search size={20} color={colors.gray[400]} />
           <TextInput
-            style={{
-              flex: 1,
-              padding: 12,
-              fontSize: 16,
-              textAlign: isRTL ? 'right' : 'left',
-            }}
+            style={[sharedStyles.searchInput, getTextAlign(isRTL)]}
             placeholder={t('tasks.searchTasks')}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -200,27 +102,9 @@ export default function TasksScreen() {
         </View>
 
         {/* Add Task Button */}
-        <TouchableOpacity
-          style={{
-            flexDirection: isRTL ? 'row-reverse' : 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#f97316',
-            borderRadius: 12,
-            padding: 14,
-            marginBottom: 16,
-          }}
-        >
-          <Plus size={20} color="#fff" />
-          <Text
-            style={{
-              color: '#fff',
-              fontSize: 16,
-              fontWeight: '600',
-              marginLeft: isRTL ? 0 : 8,
-              marginRight: isRTL ? 8 : 0,
-            }}
-          >
+        <TouchableOpacity style={[sharedStyles.primaryButton, getFlexDirection(isRTL)]}>
+          <Plus size={20} color={colors.white} />
+          <Text style={[sharedStyles.primaryButtonText, getMarginStart(isRTL, 8)]}>
             {t('tasks.addTask')}
           </Text>
         </TouchableOpacity>
@@ -234,21 +118,9 @@ export default function TasksScreen() {
             showsVerticalScrollIndicator={false}
           />
         ) : (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <ClipboardList size={48} color="#d1d5db" />
-            <Text
-              style={{
-                fontSize: 16,
-                color: '#9ca3af',
-                marginTop: 16,
-              }}
-            >
+          <View style={sharedStyles.emptyState}>
+            <ClipboardList size={48} color={colors.gray[300]} />
+            <Text style={sharedStyles.emptyStateText}>
               {t('tasks.noTasks')}
             </Text>
           </View>
