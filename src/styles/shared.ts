@@ -1,11 +1,72 @@
 import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
 
-// Color constants
+// ============================================
+// DESIGN TOKENS - Foundation for consistent UI
+// ============================================
+
+// Spacing scale (4px base unit)
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  '2xl': 24,
+  '3xl': 32,
+  '4xl': 40,
+  '5xl': 48,
+} as const;
+
+// Border radius scale
+export const radii = {
+  none: 0,
+  sm: 4,
+  md: 8,
+  lg: 12,
+  xl: 16,
+  '2xl': 24,
+  full: 9999,
+} as const;
+
+// Typography scale
+export const typography = {
+  fontSize: {
+    xs: 10,
+    sm: 12,
+    md: 14,
+    lg: 16,
+    xl: 18,
+    '2xl': 20,
+    '3xl': 24,
+    '4xl': 32,
+  },
+  fontWeight: {
+    normal: '400' as const,
+    medium: '500' as const,
+    semibold: '600' as const,
+    bold: '700' as const,
+  },
+  lineHeight: {
+    tight: 1.25,
+    normal: 1.5,
+    relaxed: 1.75,
+  },
+} as const;
+
+// Color palette
 export const colors = {
+  // Brand colors
   primary: '#f97316',
   primaryLight: '#fff7ed',
+  primaryDark: '#ea580c',
+
+  // Background colors
   background: '#f3f4f6',
+  surface: '#fff',
+  surfaceElevated: '#fff',
   white: '#fff',
+
+  // Gray scale
   gray: {
     50: '#f9fafb',
     100: '#f3f4f6',
@@ -18,22 +79,42 @@ export const colors = {
     800: '#1f2937',
     900: '#111827',
   },
+
+  // Semantic colors
   status: {
-    success: { bg: '#ecfdf5', text: '#059669' },
-    info: { bg: '#eff6ff', text: '#2563eb' },
-    warning: { bg: '#fffbeb', text: '#d97706' },
-    error: { bg: '#fef2f2', text: '#dc2626' },
+    success: { bg: '#ecfdf5', text: '#059669', border: '#a7f3d0' },
+    info: { bg: '#eff6ff', text: '#2563eb', border: '#bfdbfe' },
+    warning: { bg: '#fffbeb', text: '#d97706', border: '#fde68a' },
+    error: { bg: '#fef2f2', text: '#dc2626', border: '#fecaca' },
   },
+
+  // Priority colors
   priority: {
-    urgent: { bg: '#fef2f2', text: '#dc2626' },
-    high: { bg: '#fff7ed', text: '#ea580c' },
-    medium: { bg: '#eff6ff', text: '#2563eb' },
-    low: { bg: '#f3f4f6', text: '#6b7280' },
+    urgent: { bg: '#fef2f2', text: '#dc2626', border: '#fecaca' },
+    high: { bg: '#fff7ed', text: '#ea580c', border: '#fed7aa' },
+    medium: { bg: '#eff6ff', text: '#2563eb', border: '#bfdbfe' },
+    low: { bg: '#f3f4f6', text: '#6b7280', border: '#e5e7eb' },
+  },
+
+  // Accent colors for data visualization
+  accent: {
+    blue: '#3b82f6',
+    green: '#10b981',
+    purple: '#8b5cf6',
+    pink: '#ec4899',
+    cyan: '#06b6d4',
   },
 } as const;
 
 // Shadow styles for card elevation
 export const shadows = {
+  none: {
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
   sm: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -48,58 +129,144 @@ export const shadows = {
     shadowRadius: 4,
     elevation: 4,
   },
+  lg: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+  },
 } as const;
 
-// Common component styles
+// Animation durations (in ms)
+export const durations = {
+  fast: 150,
+  normal: 250,
+  slow: 350,
+} as const;
+
+// Icon sizes
+export const iconSizes = {
+  xs: 12,
+  sm: 16,
+  md: 20,
+  lg: 24,
+  xl: 32,
+  '2xl': 48,
+} as const;
+
+// ============================================
+// SHARED COMPONENT STYLES
+// ============================================
+
 export const sharedStyles = StyleSheet.create({
-  // Card styles
+  // Card variants
   card: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
     ...shadows.sm,
+  },
+
+  cardElevated: {
+    backgroundColor: colors.surfaceElevated,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    ...shadows.md,
+  },
+
+  cardInteractive: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    ...shadows.sm,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
 
   // Search bar container
   searchBar: {
     alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    marginBottom: 16,
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.lg,
     ...shadows.sm,
   },
 
   // Search input
   searchInput: {
     flex: 1,
-    padding: 12,
-    fontSize: 16,
+    padding: spacing.md,
+    fontSize: typography.fontSize.lg,
   },
 
-  // Primary button
+  // Button variants
   primaryButton: {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 16,
+    borderRadius: radii.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
   },
 
   primaryButtonText: {
     color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.semibold,
+  },
+
+  secondaryButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    borderRadius: radii.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+
+  secondaryButtonText: {
+    color: colors.primary,
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.semibold,
+  },
+
+  ghostButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+
+  ghostButtonText: {
+    color: colors.primary,
+    fontSize: typography.fontSize.md,
+    fontWeight: typography.fontWeight.medium,
   },
 
   // Icon container (avatar style)
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: iconSizes['2xl'],
+    height: iconSizes['2xl'],
+    borderRadius: radii.full,
     backgroundColor: colors.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  iconContainerSmall: {
+    width: iconSizes.xl,
+    height: iconSizes.xl,
+    borderRadius: radii.full,
+    backgroundColor: colors.gray[100],
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -112,7 +279,7 @@ export const sharedStyles = StyleSheet.create({
 
   pageContent: {
     flex: 1,
-    padding: 16,
+    padding: spacing.lg,
   },
 
   // Empty state
@@ -120,41 +287,91 @@ export const sharedStyles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: spacing['4xl'],
   },
 
   emptyStateText: {
-    fontSize: 16,
+    fontSize: typography.fontSize.lg,
     color: colors.gray[400],
-    marginTop: 16,
+    marginTop: spacing.lg,
+    textAlign: 'center',
   },
 
-  // Text styles
+  // Typography styles
+  heading: {
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: typography.fontWeight.bold,
+    color: colors.gray[800],
+  },
+
   title: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.semibold,
     color: colors.gray[800],
   },
 
   subtitle: {
-    fontSize: 14,
+    fontSize: typography.fontSize.md,
     color: colors.gray[500],
   },
 
+  body: {
+    fontSize: typography.fontSize.md,
+    color: colors.gray[700],
+  },
+
   caption: {
-    fontSize: 12,
+    fontSize: typography.fontSize.sm,
     color: colors.gray[400],
+  },
+
+  label: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.gray[600],
+    marginBottom: spacing.xs,
   },
 
   // Badge/chip style
   badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.sm,
   },
 
   badgeText: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.medium,
+  },
+
+  // List item styles
+  listItem: {
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+
+  listItemWithBorder: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderLeftWidth: 3,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+
+  // Divider
+  divider: {
+    height: 1,
+    backgroundColor: colors.gray[200],
+    marginVertical: spacing.lg,
+  },
+
+  // Section header
+  sectionHeader: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.gray[800],
+    marginBottom: spacing.md,
   },
 });
 
