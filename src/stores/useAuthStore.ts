@@ -19,6 +19,8 @@ interface AuthState {
   initialize: () => Promise<void>;
   fetchProfile: () => Promise<void>;
   hasRole: (roles: UserRole[]) => boolean;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  updateProfile: (data: Partial<UserProfile>) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -126,6 +128,49 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { profile } = get();
     if (!profile) return false;
     return roles.includes(profile.role);
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    set({ isLoading: true });
+    try {
+      const { user } = get();
+      if (!user?.email) throw new Error('User not authenticated');
+
+      // First verify current password by re-authenticating
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+      if (signInError) throw new Error('Current password is incorrect');
+
+      // Update to new password
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (error) throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updateProfile: async (data: Partial<UserProfile>) => {
+    set({ isLoading: true });
+    try {
+      const { user, profile } = get();
+      if (!user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('users')
+        .update(data)
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Update local profile
+      set({ profile: profile ? { ...profile, ...data } : null });
+    } finally {
+      set({ isLoading: false });
+    }
   },
 }));
 

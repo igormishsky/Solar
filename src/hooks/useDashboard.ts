@@ -26,6 +26,7 @@ export function useDashboardStats() {
         customersResult,
         completedProjectsResult,
         newCustomersResult,
+        monitoredSystemsResult,
       ] = await Promise.all([
         // Active projects
         supabase
@@ -50,13 +51,19 @@ export function useDashboardStats() {
           .from('customers')
           .select('id', { count: 'exact', head: true })
           .gte('created_at', startOfMonth.toISOString()),
+        // Systems monitored - completed projects with commercial activation
+        supabase
+          .from('projects')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'completed')
+          .in('current_stage', ['commercial_activation', 'standing_order_form']),
       ]);
 
       const stats: DashboardStats = {
         activeProjects: projectsResult.count || 0,
         pendingTasks: tasksResult.count || 0,
         totalCustomers: customersResult.count || 0,
-        systemsMonitored: 0, // Will be implemented with monitoring integration
+        systemsMonitored: monitoredSystemsResult.count || 0,
         completedProjectsThisMonth: completedProjectsResult.count || 0,
         newCustomersThisMonth: newCustomersResult.count || 0,
       };

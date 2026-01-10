@@ -273,6 +273,22 @@
     "dark": "כהה",
     "system": "מערכת"
   },
+  "security": {
+    "title": "הגדרות אבטחה",
+    "changePassword": "שינוי סיסמה",
+    "currentPassword": "סיסמה נוכחית",
+    "newPassword": "סיסמה חדשה",
+    "confirmNewPassword": "אישור סיסמה חדשה",
+    "updatePassword": "עדכון סיסמה",
+    "passwordChanged": "הסיסמה שונתה בהצלחה",
+    "passwordChangeError": "שינוי הסיסמה נכשל",
+    "incorrectCurrentPassword": "הסיסמה הנוכחית שגויה",
+    "accountSecurity": "אבטחת חשבון",
+    "lastLogin": "כניסה אחרונה",
+    "sessionManagement": "ניהול הפעלות",
+    "activeSessions": "הפעלות פעילות",
+    "logoutAllDevices": "התנתק מכל המכשירים"
+  },
   "validation": {
     "required": "שדה זה הינו חובה",
     "invalidEmail": "אנא הזן כתובת אימייל תקינה",

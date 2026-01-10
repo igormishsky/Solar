@@ -33,3 +33,13 @@ export const newPasswordSchema = withPasswordConfirmation(
 );
 
 export type NewPasswordFormData = z.infer<typeof newPasswordSchema>;
+
+export const changePasswordSchema = withPasswordConfirmation(
+  z.object({
+    currentPassword: password.required(),
+    password: password.strong(),
+    confirmPassword: password.confirm(),
+  })
+);
+
+export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;

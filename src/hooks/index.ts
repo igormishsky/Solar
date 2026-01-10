@@ -6,3 +6,4 @@ export * from './useDashboard';
 export * from './useDocuments';
 export * from './useForms';
 export * from './usePermissions';
+export * from './useMonitoring';

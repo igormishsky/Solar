@@ -1,5 +1,16 @@
 import { create } from 'zustand';
+import { Platform } from 'react-native';
 import { supabase } from '@/lib/supabase';
+import {
+  registerForPushNotificationsAsync,
+  scheduleLocalNotification,
+  addNotificationResponseListener,
+  addNotificationReceivedListener,
+  removeNotificationListener,
+  setBadgeCount,
+  type NotificationType as PushNotificationType,
+} from '@/lib/notifications';
+import type * as ExpoNotifications from 'expo-notifications';
 
 export type NotificationType = 'info' | 'success' | 'warning' | 'error';
 
@@ -17,22 +28,44 @@ interface NotificationState {
   notifications: Notification[];
   unreadCount: number;
   isLoading: boolean;
+  pushToken: string | null;
+  pushEnabled: boolean;
 
   // Actions
-  addNotification: (notification: Omit<Notification, 'id' | 'createdAt' | 'read'>) => void;
+  addNotification: (notification: Omit<Notification, 'id' | 'createdAt' | 'read'>, sendPush?: boolean) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   removeNotification: (id: string) => void;
   clearAll: () => void;
   subscribeToRealtime: (userId: string) => () => void;
+  initializePushNotifications: () => Promise<void>;
+  setPushEnabled: (enabled: boolean) => void;
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
   notifications: [],
   unreadCount: 0,
   isLoading: false,
+  pushToken: null,
+  pushEnabled: true,
 
-  addNotification: (notification) => {
+  initializePushNotifications: async () => {
+    try {
+      const token = await registerForPushNotificationsAsync();
+      if (token) {
+        set({ pushToken: token, pushEnabled: true });
+        console.log('Push notification token:', token);
+      }
+    } catch (error) {
+      console.error('Failed to initialize push notifications:', error);
+    }
+  },
+
+  setPushEnabled: (enabled: boolean) => {
+    set({ pushEnabled: enabled });
+  },
+
+  addNotification: (notification, sendPush = true) => {
     const newNotification: Notification = {
       ...notification,
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -44,6 +77,22 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       notifications: [newNotification, ...state.notifications],
       unreadCount: state.unreadCount + 1,
     }));
+
+    // Send push notification if enabled and on native platform
+    const { pushEnabled } = get();
+    if (sendPush && pushEnabled && Platform.OS !== 'web') {
+      scheduleLocalNotification(
+        notification.title,
+        notification.message,
+        notification.data
+      ).catch(console.error);
+    }
+
+    // Update badge count
+    if (Platform.OS === 'ios') {
+      const { unreadCount } = get();
+      setBadgeCount(unreadCount).catch(console.error);
+    }
   },
 
   markAsRead: (id) => {
