@@ -273,6 +273,22 @@
     "dark": "Dark",
     "system": "System"
   },
+  "security": {
+    "title": "Security Settings",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "updatePassword": "Update Password",
+    "passwordChanged": "Password changed successfully",
+    "passwordChangeError": "Failed to change password",
+    "incorrectCurrentPassword": "Current password is incorrect",
+    "accountSecurity": "Account Security",
+    "lastLogin": "Last Login",
+    "sessionManagement": "Session Management",
+    "activeSessions": "Active Sessions",
+    "logoutAllDevices": "Logout from all devices"
+  },
   "validation": {
     "required": "This field is required",
     "invalidEmail": "Please enter a valid email",

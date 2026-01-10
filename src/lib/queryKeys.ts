@@ -80,9 +80,11 @@ export const queryKeys = {
     upcomingTasks: ['dashboard', 'upcoming'] as const,
   },
 
-  // Monitoring (Phase 2)
+  // Monitoring
   monitoring: {
     systems: ['monitoring', 'systems'] as const,
+    stats: ['monitoring', 'stats'] as const,
+    project: (projectId: string) => ['monitoring', 'project', projectId] as const,
     performance: (systemId: string, range?: string) =>
       ['monitoring', 'performance', systemId, range] as const,
     alerts: ['monitoring', 'alerts'] as const,

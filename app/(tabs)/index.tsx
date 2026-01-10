@@ -129,6 +129,7 @@ export default function DashboardScreen() {
             bgColor="#f5f3ff"
             isLoading={statsLoading}
             isRTL={isRTL}
+            onPress={() => router.push('/monitoring')}
           />
         </View>
 

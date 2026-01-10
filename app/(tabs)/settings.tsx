@@ -226,7 +226,7 @@ export default function SettingsScreen() {
           <SettingItem
             icon={<Shield size={20} color="#f97316" />}
             title={t('settings.security')}
-            onPress={() => {}}
+            onPress={() => router.push('/settings/security')}
           />
         </View>
 
