@@ -85,6 +85,8 @@ export const requirePermission = (permission: string) => {
       'documents:read', 'documents:upload',
       'forms:read', 'forms:update', 'forms:approve',
       'reports:view', 'reports:export',
+      'users:read',
+      'audit:read',
     ],
     office_staff: [
       'customers:read', 'customers:create', 'customers:update',

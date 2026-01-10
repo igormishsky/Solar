@@ -1,0 +1,365 @@
+import { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Picker } from '@react-native-picker/picker';
+import { User, Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react-native';
+
+import { useLanguageStore } from '@/stores/useLanguageStore';
+import { useUser, useUpdateUser, useResetUserPassword } from '@/hooks/useUsers';
+import { SimpleHeader, Button, Section } from '@/components/ui';
+import { UserRole } from '@/types/database.types';
+import { colors } from '@/styles';
+
+const updateUserSchema = z.object({
+  full_name: z.string().min(1, 'Full name is required'),
+  phone: z.string().optional(),
+  role: z.enum(['administrator', 'manager', 'office_staff', 'field_technician', 'viewer']),
+});
+
+type UpdateUserFormData = z.infer<typeof updateUserSchema>;
+
+const resetPasswordSchema = z.object({
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword'],
+});
+
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+
+export default function EditUserScreen() {
+  const { t } = useTranslation();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { isRTL } = useLanguageStore();
+  const { data: user, isLoading } = useUser(id);
+  const updateUser = useUpdateUser();
+  const resetPassword = useResetUserPassword();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<UpdateUserFormData>({
+    resolver: zodResolver(updateUserSchema),
+    values: user ? {
+      full_name: user.full_name || '',
+      phone: user.phone || '',
+      role: user.role,
+    } : undefined,
+  });
+
+  const {
+    control: passwordControl,
+    handleSubmit: handlePasswordSubmit,
+    reset: resetPasswordForm,
+    formState: { errors: passwordErrors },
+  } = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: '',
+      confirmPassword: '',
+    },
+  });
+
+  const onSubmit = async (data: UpdateUserFormData) => {
+    try {
+      await updateUser.mutateAsync({
+        id,
+        data: {
+          full_name: data.full_name,
+          phone: data.phone || null,
+          role: data.role as UserRole,
+        },
+      });
+      Alert.alert(
+        t('common.success'),
+        t('users.updateSuccess'),
+        [{ text: t('common.confirm'), onPress: () => router.back() }]
+      );
+    } catch (error) {
+      Alert.alert(t('common.error'), t('errors.general'));
+    }
+  };
+
+  const onResetPassword = async (data: ResetPasswordFormData) => {
+    try {
+      await resetPassword.mutateAsync({ id, password: data.password });
+      Alert.alert(t('common.success'), t('users.passwordResetSuccess'));
+      resetPasswordForm();
+    } catch (error) {
+      Alert.alert(t('common.error'), t('errors.general'));
+    }
+  };
+
+  const inputStyle = {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    textAlign: isRTL ? 'right' as const : 'left' as const,
+  };
+
+  const errorInputStyle = {
+    ...inputStyle,
+    borderColor: '#ef4444',
+  };
+
+  const roles: UserRole[] = ['administrator', 'manager', 'office_staff', 'field_technician', 'viewer'];
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#f3f4f6' }} edges={['bottom']}>
+        <SimpleHeader title={t('users.editUser')} onBack={() => router.back()} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!user) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#f3f4f6' }} edges={['bottom']}>
+        <SimpleHeader title={t('users.editUser')} onBack={() => router.back()} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>{t('errors.notFound')}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f3f4f6' }} edges={['bottom']}>
+      <SimpleHeader title={t('users.editUser')} onBack={() => router.back()} />
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView contentContainerStyle={{ padding: 16 }}>
+          <Section title={t('users.userDetails')}>
+            {/* Email (read-only) */}
+            <View style={{ marginBottom: 16 }}>
+              <Text style={{ fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
+                {t('users.email')}
+              </Text>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+                <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: '#f3f4f6', justifyContent: 'center', alignItems: 'center', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
+                  <Mail size={20} color="#9ca3af" />
+                </View>
+                <TextInput
+                  style={{ ...inputStyle, backgroundColor: '#f3f4f6', color: '#6b7280' }}
+                  value={user.email}
+                  editable={false}
+                />
+              </View>
+            </View>
+
+            {/* Full Name */}
+            <View style={{ marginBottom: 16 }}>
+              <Text style={{ fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
+                {t('users.fullName')} *
+              </Text>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+                <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: '#fff7ed', justifyContent: 'center', alignItems: 'center', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
+                  <User size={20} color="#f97316" />
+                </View>
+                <Controller
+                  control={control}
+                  name="full_name"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      style={errors.full_name ? errorInputStyle : inputStyle}
+                      placeholder={t('users.fullName')}
+                      onBlur={onBlur}
+                      onChangeText={onChange}
+                      value={value}
+                    />
+                  )}
+                />
+              </View>
+              {errors.full_name && (
+                <Text style={{ color: '#ef4444', fontSize: 12, marginTop: 4, textAlign: isRTL ? 'right' : 'left' }}>
+                  {errors.full_name.message}
+                </Text>
+              )}
+            </View>
+
+            {/* Phone */}
+            <View style={{ marginBottom: 16 }}>
+              <Text style={{ fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
+                {t('users.phone')}
+              </Text>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+                <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: '#fff7ed', justifyContent: 'center', alignItems: 'center', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
+                  <Phone size={20} color="#f97316" />
+                </View>
+                <Controller
+                  control={control}
+                  name="phone"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      style={inputStyle}
+                      placeholder={t('users.phone')}
+                      keyboardType="phone-pad"
+                      onBlur={onBlur}
+                      onChangeText={onChange}
+                      value={value}
+                    />
+                  )}
+                />
+              </View>
+            </View>
+
+            {/* Role */}
+            <View style={{ marginBottom: 24 }}>
+              <Text style={{ fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
+                {t('users.role')} *
+              </Text>
+              <Controller
+                control={control}
+                name="role"
+                render={({ field: { onChange, value } }) => (
+                  <View style={{ borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, backgroundColor: colors.white }}>
+                    <Picker
+                      selectedValue={value}
+                      onValueChange={onChange}
+                      style={{ height: 50 }}
+                    >
+                      {roles.map((role) => (
+                        <Picker.Item
+                          key={role}
+                          label={t(`users.roles.${role}`)}
+                          value={role}
+                        />
+                      ))}
+                    </Picker>
+                  </View>
+                )}
+              />
+            </View>
+
+            <Button
+              title={t('common.save')}
+              onPress={handleSubmit(onSubmit)}
+              isLoading={updateUser.isPending}
+              fullWidth
+              isRTL={isRTL}
+            />
+          </Section>
+
+          {/* Reset Password Section */}
+          <Section title={t('users.resetPassword')}>
+            {/* New Password */}
+            <View style={{ marginBottom: 16 }}>
+              <Text style={{ fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
+                {t('users.newPassword')} *
+              </Text>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+                <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: '#fff7ed', justifyContent: 'center', alignItems: 'center', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
+                  <Lock size={20} color="#f97316" />
+                </View>
+                <Controller
+                  control={passwordControl}
+                  name="password"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <View style={{ flex: 1, position: 'relative' }}>
+                      <TextInput
+                        style={passwordErrors.password ? errorInputStyle : inputStyle}
+                        placeholder={t('users.newPassword')}
+                        secureTextEntry={!showPassword}
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        value={value}
+                      />
+                      <View style={{ position: 'absolute', right: isRTL ? undefined : 12, left: isRTL ? 12 : undefined, top: 12 }}>
+                        {showPassword ? (
+                          <EyeOff size={20} color="#6b7280" onPress={() => setShowPassword(false)} />
+                        ) : (
+                          <Eye size={20} color="#6b7280" onPress={() => setShowPassword(true)} />
+                        )}
+                      </View>
+                    </View>
+                  )}
+                />
+              </View>
+              {passwordErrors.password && (
+                <Text style={{ color: '#ef4444', fontSize: 12, marginTop: 4, textAlign: isRTL ? 'right' : 'left' }}>
+                  {passwordErrors.password.message}
+                </Text>
+              )}
+            </View>
+
+            {/* Confirm Password */}
+            <View style={{ marginBottom: 24 }}>
+              <Text style={{ fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 8, textAlign: isRTL ? 'right' : 'left' }}>
+                {t('users.confirmPassword')} *
+              </Text>
+              <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center' }}>
+                <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: '#fff7ed', justifyContent: 'center', alignItems: 'center', marginRight: isRTL ? 0 : 8, marginLeft: isRTL ? 8 : 0 }}>
+                  <Lock size={20} color="#f97316" />
+                </View>
+                <Controller
+                  control={passwordControl}
+                  name="confirmPassword"
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <View style={{ flex: 1, position: 'relative' }}>
+                      <TextInput
+                        style={passwordErrors.confirmPassword ? errorInputStyle : inputStyle}
+                        placeholder={t('users.confirmPassword')}
+                        secureTextEntry={!showConfirmPassword}
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        value={value}
+                      />
+                      <View style={{ position: 'absolute', right: isRTL ? undefined : 12, left: isRTL ? 12 : undefined, top: 12 }}>
+                        {showConfirmPassword ? (
+                          <EyeOff size={20} color="#6b7280" onPress={() => setShowConfirmPassword(false)} />
+                        ) : (
+                          <Eye size={20} color="#6b7280" onPress={() => setShowConfirmPassword(true)} />
+                        )}
+                      </View>
+                    </View>
+                  )}
+                />
+              </View>
+              {passwordErrors.confirmPassword && (
+                <Text style={{ color: '#ef4444', fontSize: 12, marginTop: 4, textAlign: isRTL ? 'right' : 'left' }}>
+                  {passwordErrors.confirmPassword.message}
+                </Text>
+              )}
+            </View>
+
+            <Button
+              title={t('users.resetPassword')}
+              onPress={handlePasswordSubmit(onResetPassword)}
+              isLoading={resetPassword.isPending}
+              fullWidth
+              isRTL={isRTL}
+              variant="secondary"
+            />
+          </Section>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}

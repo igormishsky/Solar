@@ -308,5 +308,88 @@
     "name": "O.R.I SOLAR",
     "tagline": "Solar Installation Management System",
     "copyright": "© {{year}} ASAF SHAMLI CONSULTING LTD. All rights reserved."
+  },
+  "admin": {
+    "title": "Administration",
+    "userManagement": "User Management",
+    "auditLogs": "Audit Logs"
+  },
+  "users": {
+    "title": "Users",
+    "addUser": "Add User",
+    "editUser": "Edit User",
+    "userDetails": "User Details",
+    "fullName": "Full Name",
+    "email": "Email",
+    "phone": "Phone",
+    "role": "Role",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "createdAt": "Created At",
+    "noUsers": "No users found",
+    "searchUsers": "Search users...",
+    "deleteConfirm": "Are you sure you want to delete this user?",
+    "deleteSuccess": "User deleted successfully",
+    "createSuccess": "User created successfully",
+    "updateSuccess": "User updated successfully",
+    "resetPassword": "Reset Password",
+    "newPassword": "New Password",
+    "passwordResetSuccess": "Password reset successfully",
+    "roles": {
+      "administrator": "Administrator",
+      "manager": "Manager",
+      "office_staff": "Office Staff",
+      "field_technician": "Field Technician",
+      "viewer": "Viewer"
+    },
+    "roleDescriptions": {
+      "administrator": "Full system access",
+      "manager": "Can manage most resources",
+      "office_staff": "Can create and edit customers, projects, and tasks",
+      "field_technician": "Can view projects and update assigned tasks",
+      "viewer": "Read-only access"
+    }
+  },
+  "audit": {
+    "title": "Audit Logs",
+    "action": "Action",
+    "entityType": "Entity Type",
+    "entityId": "Entity ID",
+    "user": "User",
+    "timestamp": "Timestamp",
+    "ipAddress": "IP Address",
+    "details": "Details",
+    "noLogs": "No audit logs found",
+    "filterByAction": "Filter by action",
+    "filterByEntity": "Filter by entity",
+    "filterByUser": "Filter by user",
+    "filterByDate": "Filter by date",
+    "actions": {
+      "create": "Create",
+      "update": "Update",
+      "delete": "Delete",
+      "view": "View",
+      "export": "Export",
+      "login": "Login",
+      "logout": "Logout",
+      "password_change": "Password Change"
+    },
+    "entities": {
+      "customer": "Customer",
+      "project": "Project",
+      "task": "Task",
+      "professional": "Professional",
+      "form": "Form",
+      "document": "Document",
+      "user": "User",
+      "report": "Report"
+    },
+    "stats": {
+      "title": "Audit Statistics",
+      "totalEvents": "Total Events",
+      "last30Days": "Last 30 Days",
+      "byAction": "By Action",
+      "byEntity": "By Entity"
+    }
   }
 }

@@ -189,6 +189,24 @@ CREATE TABLE IF NOT EXISTS documents (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Audit logs table
+CREATE TYPE audit_action AS ENUM ('create', 'update', 'delete', 'view', 'export', 'login', 'logout', 'password_change');
+CREATE TYPE audit_entity_type AS ENUM ('customer', 'project', 'task', 'professional', 'form', 'document', 'user', 'report');
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    action audit_action NOT NULL,
+    entity_type audit_entity_type NOT NULL,
+    entity_id UUID,
+    old_values JSONB,
+    new_values JSONB,
+    ip_address TEXT,
+    user_agent TEXT,
+    metadata JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Create indexes for better query performance
 CREATE INDEX idx_customers_email ON customers(email);
 CREATE INDEX idx_customers_phone ON customers(phone_primary);
@@ -200,6 +218,10 @@ CREATE INDEX idx_tasks_status ON tasks(status);
 CREATE INDEX idx_forms_project ON forms(project_id);
 CREATE INDEX idx_documents_project ON documents(project_id);
 CREATE INDEX idx_documents_customer ON documents(customer_id);
+CREATE INDEX idx_audit_logs_user ON audit_logs(user_id);
+CREATE INDEX idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
+CREATE INDEX idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at);
 
 -- Enable Row Level Security
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -211,6 +233,24 @@ ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE installation_stages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE forms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for audit_logs (only admins and managers can view)
+CREATE POLICY "Admins and managers can view audit logs"
+    ON audit_logs FOR SELECT
+    TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM users
+            WHERE users.id = auth.uid()
+            AND users.role IN ('administrator', 'manager')
+        )
+    );
+
+CREATE POLICY "System can insert audit logs"
+    ON audit_logs FOR INSERT
+    TO authenticated
+    WITH CHECK (true);
 
 -- RLS Policies for users
 CREATE POLICY "Users can view own profile"

@@ -89,6 +89,18 @@ export const queryKeys = {
       ['monitoring', 'performance', systemId, range] as const,
     alerts: ['monitoring', 'alerts'] as const,
   },
+
+  // Users (admin)
+  users: createEntityKeysWithExtras('users', (base) => ({
+    byRole: (role: string) => [base, 'role', role] as const,
+  })),
+
+  // Audit Logs
+  auditLogs: createEntityKeysWithExtras('audit_logs', (base) => ({
+    byEntity: (entityType: string, entityId: string) => [base, 'entity', entityType, entityId] as const,
+    byUser: (userId: string) => [base, 'user', userId] as const,
+    stats: (days?: number) => [base, 'stats', days] as const,
+  })),
 };
 
 /**

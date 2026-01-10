@@ -27,6 +27,8 @@ export type ProfessionalType =
   | 'constructor';
 export type UserRole = 'administrator' | 'manager' | 'office_staff' | 'field_technician' | 'viewer';
 export type FormStatus = 'draft' | 'review' | 'signature_pending' | 'submitted' | 'approved' | 'rejected';
+export type AuditAction = 'create' | 'update' | 'delete' | 'view' | 'export' | 'login' | 'logout' | 'password_change';
+export type AuditEntityType = 'customer' | 'project' | 'task' | 'professional' | 'form' | 'document' | 'user' | 'report';
 
 export interface Database {
   public: {
@@ -445,6 +447,47 @@ export interface Database {
           assigned_at?: string;
         };
       };
+      audit_logs: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          action: AuditAction;
+          entity_type: AuditEntityType;
+          entity_id: string | null;
+          old_values: Record<string, unknown> | null;
+          new_values: Record<string, unknown> | null;
+          ip_address: string | null;
+          user_agent: string | null;
+          metadata: Record<string, unknown> | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          action: AuditAction;
+          entity_type: AuditEntityType;
+          entity_id?: string | null;
+          old_values?: Record<string, unknown> | null;
+          new_values?: Record<string, unknown> | null;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          metadata?: Record<string, unknown> | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          action?: AuditAction;
+          entity_type?: AuditEntityType;
+          entity_id?: string | null;
+          old_values?: Record<string, unknown> | null;
+          new_values?: Record<string, unknown> | null;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          metadata?: Record<string, unknown> | null;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -461,6 +504,8 @@ export interface Database {
       professional_type: ProfessionalType;
       user_role: UserRole;
       form_status: FormStatus;
+      audit_action: AuditAction;
+      audit_entity_type: AuditEntityType;
     };
   };
 }

@@ -43,6 +43,27 @@ import {
 import { INSTALLATION_STAGES } from '@/constants';
 import { InstallationStage } from '@/types/database.types';
 
+// Types for project relations
+interface InstallationStageData {
+  id: string;
+  stage: InstallationStage;
+  completed: boolean;
+  completed_at: string | null;
+  notes: string | null;
+}
+
+interface ProfessionalData {
+  name: string;
+  professional_type: string;
+  phone: string | null;
+}
+
+interface ProjectProfessionalData {
+  id: string;
+  role: string | null;
+  professionals: ProfessionalData | null;
+}
+
 type StageItemProps = {
   stage: InstallationStage;
   stageData?: {
@@ -164,7 +185,7 @@ export default function ProjectDetailScreen() {
 
   const statusColors = getStatusColors(project.status);
   const stagesMap = new Map(
-    project.installation_stages?.map((s: any) => [s.stage, s])
+    (project.installation_stages as InstallationStageData[] | undefined)?.map((s) => [s.stage, s])
   );
 
   return (
@@ -346,7 +367,7 @@ export default function ProjectDetailScreen() {
           isRTL={isRTL}
         >
           {project.project_professionals && project.project_professionals.length > 0 ? (
-            project.project_professionals.map((pp: any) => (
+            (project.project_professionals as ProjectProfessionalData[]).map((pp) => (
               <View
                 key={pp.id}
                 style={[

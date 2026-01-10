@@ -15,6 +15,8 @@ import formsRouter from './routes/forms';
 import documentsRouter from './routes/documents';
 import reportsRouter from './routes/reports';
 import healthRouter from './routes/health';
+import usersRouter from './routes/users';
+import auditRouter from './routes/audit';
 
 dotenv.config();
 
@@ -29,13 +31,28 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Rate limiting
-const limiter = rateLimit({
+// General rate limiting
+const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
   message: 'Too many requests, please try again later.',
 });
-app.use('/api/', limiter);
+app.use('/api/', generalLimiter);
+
+// Stricter rate limiting for sensitive endpoints (user management, password reset)
+const sensitiveLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // limit each IP to 20 requests per windowMs
+  message: 'Too many requests to sensitive endpoint, please try again later.',
+});
+
+// Very strict rate limiting for authentication-related endpoints
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // limit each IP to 10 requests per hour
+  message: 'Too many authentication attempts, please try again later.',
+  skipSuccessfulRequests: true, // Don't count successful requests
+});
 
 // Logging
 app.use(morgan('combined'));
@@ -55,6 +72,14 @@ app.use('/api/professionals', authMiddleware, professionalsRouter);
 app.use('/api/forms', authMiddleware, formsRouter);
 app.use('/api/documents', authMiddleware, documentsRouter);
 app.use('/api/reports', authMiddleware, reportsRouter);
+
+// User management routes with stricter rate limiting
+app.use('/api/users', sensitiveLimiter, authMiddleware, usersRouter);
+// Password reset endpoint with authentication-level rate limiting
+app.use('/api/users/:id/reset-password', authLimiter);
+
+// Audit logs route (sensitive - admin only)
+app.use('/api/audit', sensitiveLimiter, authMiddleware, auditRouter);
 
 // Error handling
 app.use(errorHandler);

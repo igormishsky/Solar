@@ -21,7 +21,27 @@ export interface Notification {
   message: string;
   read: boolean;
   createdAt: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
+}
+
+// Types for Supabase realtime payloads
+interface ProjectPayload {
+  id: string;
+  name: string;
+  status?: string;
+}
+
+interface TaskPayload {
+  id: string;
+  title: string;
+  due_date?: string;
+}
+
+interface FormPayload {
+  id: string;
+  form_name: string;
+  status: string;
+  project_id: string;
 }
 
 interface NotificationState {
@@ -140,22 +160,24 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         },
         (payload) => {
           const { addNotification } = get();
+          const newProject = payload.new as ProjectPayload;
+          const oldProject = payload.old as ProjectPayload | null;
           if (payload.eventType === 'INSERT') {
             addNotification({
               type: 'info',
               title: 'New Project',
-              message: `Project "${(payload.new as any).name}" was created`,
-              data: { projectId: (payload.new as any).id },
+              message: `Project "${newProject.name}" was created`,
+              data: { projectId: newProject.id },
             });
           } else if (payload.eventType === 'UPDATE') {
-            const oldStatus = (payload.old as any)?.status;
-            const newStatus = (payload.new as any)?.status;
+            const oldStatus = oldProject?.status;
+            const newStatus = newProject?.status;
             if (oldStatus !== newStatus && newStatus === 'completed') {
               addNotification({
                 type: 'success',
                 title: 'Project Completed',
-                message: `Project "${(payload.new as any).name}" has been completed`,
-                data: { projectId: (payload.new as any).id },
+                message: `Project "${newProject.name}" has been completed`,
+                data: { projectId: newProject.id },
               });
             }
           }
@@ -176,15 +198,15 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         },
         (payload) => {
           const { addNotification } = get();
+          const task = payload.new as TaskPayload;
           if (payload.eventType === 'INSERT') {
             addNotification({
               type: 'info',
               title: 'New Task Assigned',
-              message: `You have been assigned: "${(payload.new as any).title}"`,
-              data: { taskId: (payload.new as any).id },
+              message: `You have been assigned: "${task.title}"`,
+              data: { taskId: task.id },
             });
           } else if (payload.eventType === 'UPDATE') {
-            const task = payload.new as any;
             if (task.due_date) {
               const dueDate = new Date(task.due_date);
               const now = new Date();
@@ -215,7 +237,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         },
         (payload) => {
           const { addNotification } = get();
-          const form = payload.new as any;
+          const form = payload.new as FormPayload;
           if (form.status === 'signature_pending') {
             addNotification({
               type: 'warning',

@@ -1,10 +1,80 @@
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { supabase } from './supabase';
+import { Tables } from '@/types/database.types';
+
+// Types for export functions
+type Customer = Tables<'customers'>;
+type Professional = Tables<'professionals'>;
+
+interface ProjectWithCustomer {
+  id: string;
+  name: string;
+  status: string;
+  current_stage: string;
+  system_size_kw: number | null;
+  panel_count: number | null;
+  inverter_model: string | null;
+  estimated_annual_production: number | null;
+  start_date: string | null;
+  estimated_completion_date: string | null;
+  actual_completion_date: string | null;
+  created_at: string;
+  customers: { first_name: string; last_name: string } | null;
+}
+
+interface TaskWithRelations {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  due_date: string | null;
+  completed_at: string | null;
+  created_at: string;
+  projects: { name: string } | null;
+  customers: { first_name: string; last_name: string } | null;
+}
+
+interface InstallationStageData {
+  stage: string;
+  completed: boolean;
+  completed_at: string | null;
+}
+
+interface ProjectProfessionalData {
+  professionals: { professional_type: string; name: string } | null;
+}
+
+interface TaskData {
+  title: string;
+  status: string;
+  priority: string;
+}
+
+interface FormData {
+  form_name: string;
+  status: string;
+}
+
+interface ProjectReportData {
+  name: string;
+  status: string;
+  current_stage: string;
+  system_size_kw: number | null;
+  customers: {
+    first_name: string;
+    last_name: string;
+    phone_primary: string;
+    email: string | null;
+  } | null;
+  installation_stages: InstallationStageData[] | null;
+  project_professionals: ProjectProfessionalData[] | null;
+}
 
 // CSV Export utilities
 export async function exportToCSV(
-  data: Record<string, any>[],
+  data: Record<string, string | number | boolean>[],
   filename: string,
   headers?: string[]
 ): Promise<void> {
@@ -91,7 +161,7 @@ export async function exportProjects(): Promise<void> {
 
   if (error) throw error;
 
-  const exportData = data.map((project: any) => ({
+  const exportData = (data as ProjectWithCustomer[]).map((project) => ({
     'Project Name': project.name,
     'Customer': project.customers
       ? `${project.customers.first_name} ${project.customers.last_name}`
@@ -135,7 +205,7 @@ export async function exportTasks(): Promise<void> {
 
   if (error) throw error;
 
-  const exportData = data.map((task: any) => ({
+  const exportData = (data as TaskWithRelations[]).map((task) => ({
     'Title': task.title,
     'Description': task.description || '',
     'Status': task.status,
@@ -252,22 +322,22 @@ export async function exportProjectReport(projectId: string): Promise<void> {
       Field: 'Email',
       Value: project.customers?.email || '-',
     },
-    ...(project.installation_stages || []).map((stage: any) => ({
+    ...((project as ProjectReportData).installation_stages || []).map((stage: InstallationStageData) => ({
       Section: 'Installation Stages',
       Field: stage.stage,
-      Value: stage.completed ? `Completed (${new Date(stage.completed_at).toLocaleDateString()})` : 'Pending',
+      Value: stage.completed ? `Completed (${new Date(stage.completed_at || '').toLocaleDateString()})` : 'Pending',
     })),
-    ...(project.project_professionals || []).map((pp: any) => ({
+    ...((project as ProjectReportData).project_professionals || []).map((pp: ProjectProfessionalData) => ({
       Section: 'Team',
       Field: pp.professionals?.professional_type || 'Unknown',
       Value: pp.professionals?.name || '-',
     })),
-    ...(tasks || []).map((task: any) => ({
+    ...((tasks || []) as TaskData[]).map((task: TaskData) => ({
       Section: 'Tasks',
       Field: task.title,
       Value: `${task.status} (${task.priority})`,
     })),
-    ...(forms || []).map((form: any) => ({
+    ...((forms || []) as FormData[]).map((form: FormData) => ({
       Section: 'Forms',
       Field: form.form_name,
       Value: form.status,

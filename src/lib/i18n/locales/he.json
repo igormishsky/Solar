@@ -308,5 +308,88 @@
     "name": "O.R.I SOLAR",
     "tagline": "מערכת ניהול התקנות סולאריות",
     "copyright": "© {{year}} אסף שמלי ייעוץ בע\"מ. כל הזכויות שמורות."
+  },
+  "admin": {
+    "title": "ניהול",
+    "userManagement": "ניהול משתמשים",
+    "auditLogs": "יומן פעילות"
+  },
+  "users": {
+    "title": "משתמשים",
+    "addUser": "הוספת משתמש",
+    "editUser": "עריכת משתמש",
+    "userDetails": "פרטי משתמש",
+    "fullName": "שם מלא",
+    "email": "אימייל",
+    "phone": "טלפון",
+    "role": "תפקיד",
+    "password": "סיסמה",
+    "confirmPassword": "אישור סיסמה",
+    "createdAt": "נוצר ב",
+    "noUsers": "לא נמצאו משתמשים",
+    "searchUsers": "חיפוש משתמשים...",
+    "deleteConfirm": "האם אתה בטוח שברצונך למחוק משתמש זה?",
+    "deleteSuccess": "המשתמש נמחק בהצלחה",
+    "createSuccess": "המשתמש נוצר בהצלחה",
+    "updateSuccess": "המשתמש עודכן בהצלחה",
+    "resetPassword": "איפוס סיסמה",
+    "newPassword": "סיסמה חדשה",
+    "passwordResetSuccess": "הסיסמה אופסה בהצלחה",
+    "roles": {
+      "administrator": "מנהל מערכת",
+      "manager": "מנהל",
+      "office_staff": "צוות משרד",
+      "field_technician": "טכנאי שטח",
+      "viewer": "צופה"
+    },
+    "roleDescriptions": {
+      "administrator": "גישה מלאה למערכת",
+      "manager": "יכול לנהל רוב המשאבים",
+      "office_staff": "יכול ליצור ולערוך לקוחות, פרויקטים ומשימות",
+      "field_technician": "יכול לצפות בפרויקטים ולעדכן משימות משויכות",
+      "viewer": "גישת קריאה בלבד"
+    }
+  },
+  "audit": {
+    "title": "יומן פעילות",
+    "action": "פעולה",
+    "entityType": "סוג ישות",
+    "entityId": "מזהה ישות",
+    "user": "משתמש",
+    "timestamp": "זמן",
+    "ipAddress": "כתובת IP",
+    "details": "פרטים",
+    "noLogs": "לא נמצאו רשומות",
+    "filterByAction": "סינון לפי פעולה",
+    "filterByEntity": "סינון לפי ישות",
+    "filterByUser": "סינון לפי משתמש",
+    "filterByDate": "סינון לפי תאריך",
+    "actions": {
+      "create": "יצירה",
+      "update": "עדכון",
+      "delete": "מחיקה",
+      "view": "צפייה",
+      "export": "ייצוא",
+      "login": "כניסה",
+      "logout": "יציאה",
+      "password_change": "שינוי סיסמה"
+    },
+    "entities": {
+      "customer": "לקוח",
+      "project": "פרויקט",
+      "task": "משימה",
+      "professional": "איש מקצוע",
+      "form": "טופס",
+      "document": "מסמך",
+      "user": "משתמש",
+      "report": "דוח"
+    },
+    "stats": {
+      "title": "סטטיסטיקות פעילות",
+      "totalEvents": "סה\"כ אירועים",
+      "last30Days": "30 ימים אחרונים",
+      "byAction": "לפי פעולה",
+      "byEntity": "לפי ישות"
+    }
   }
 }
