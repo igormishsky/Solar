@@ -6,3 +6,12 @@ export { LoadingScreen, LoadingIndicator } from './LoadingScreen';
 export { ErrorScreen, ErrorMessage } from './ErrorScreen';
 export { EmptyState } from './EmptyState';
 export { InfoRow } from './InfoRow';
+
+// Dashboard and list components
+export { StatCard } from './StatCard';
+export { ActivityItem } from './ActivityItem';
+export { TaskItem } from './TaskItem';
+
+// Core UI primitives
+export { Button } from './Button';
+export { Badge, PriorityBadge, StatusBadge } from './Badge';
