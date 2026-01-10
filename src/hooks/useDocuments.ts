@@ -124,8 +124,8 @@ export function useUploadDocument() {
         .getPublicUrl(filePath);
 
       // Create document record
-      const { data, error } = await supabase
-        .from('documents')
+      const { data, error } = await (supabase
+        .from('documents') as any)
         .insert({
           name,
           file_url: urlData.publicUrl,

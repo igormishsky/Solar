@@ -21,7 +21,7 @@ const createEntityKeys = <T extends string>(entity: T) => ({
  */
 const createEntityKeysWithExtras = <
   T extends string,
-  E extends Record<string, (...args: QueryKeyParams[]) => readonly unknown[]>
+  E extends Record<string, ((...args: any[]) => readonly unknown[]) | readonly unknown[]>
 >(
   entity: T,
   extras: (base: T) => E

@@ -89,7 +89,7 @@ const STATUS_CONFIGS: Record<FormStatus, { icon: React.ReactNode; color: string;
 
 export default function ProjectFormsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+  const _router = useRouter();
   const { t } = useTranslation();
   const { isRTL } = useLanguageStore();
   const language = useLanguageStore((state) => state.language);

@@ -62,8 +62,8 @@ export function useCreateCustomer() {
 
   return useMutation({
     mutationFn: async (customer: CustomerInsert) => {
-      const { data, error } = await supabase
-        .from('customers')
+      const { data, error } = await (supabase
+        .from('customers') as any)
         .insert(customer)
         .select()
         .single();
@@ -82,8 +82,8 @@ export function useUpdateCustomer() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: CustomerUpdate }) => {
-      const { data: updated, error } = await supabase
-        .from('customers')
+      const { data: updated, error } = await (supabase
+        .from('customers') as any)
         .update(data)
         .eq('id', id)
         .select()

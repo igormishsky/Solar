@@ -20,6 +20,34 @@ interface ProjectWithCustomer extends Project {
   };
 }
 
+interface ProjectDetail extends Project {
+  customers?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    phone_primary: string;
+    email: string | null;
+  };
+  installation_stages?: Array<{
+    id: string;
+    stage: InstallationStage;
+    completed: boolean;
+    completed_at: string | null;
+    notes: string | null;
+  }>;
+  project_professionals?: Array<{
+    id: string;
+    role: string | null;
+    professionals?: {
+      id: string;
+      name: string;
+      professional_type: string;
+      phone: string | null;
+      email: string | null;
+    };
+  }>;
+}
+
 export function useProjects(filters?: ProjectFilters) {
   return useQuery({
     queryKey: queryKeys.projects.list(filters),
@@ -91,7 +119,7 @@ export function useProject(id: string) {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as unknown as ProjectDetail;
     },
     enabled: !!id,
   });
@@ -119,8 +147,8 @@ export function useCreateProject() {
 
   return useMutation({
     mutationFn: async (project: ProjectInsert) => {
-      const { data, error } = await supabase
-        .from('projects')
+      const { data, error } = await (supabase
+        .from('projects') as any)
         .insert(project)
         .select()
         .single();
@@ -139,15 +167,16 @@ export function useCreateProject() {
         'standing_order_form',
       ];
 
-      await supabase.from('installation_stages').insert(
+      const projectData = data as Project;
+      await (supabase.from('installation_stages') as any).insert(
         stages.map((stage) => ({
-          project_id: data.id,
+          project_id: projectData.id,
           stage,
           completed: false,
         }))
       );
 
-      return data as Project;
+      return projectData;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.all });
@@ -161,8 +190,8 @@ export function useUpdateProject() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: ProjectUpdate }) => {
-      const { data: updated, error } = await supabase
-        .from('projects')
+      const { data: updated, error } = await (supabase
+        .from('projects') as any)
         .update(data)
         .eq('id', id)
         .select()
@@ -194,8 +223,8 @@ export function useUpdateInstallationStage() {
       completed: boolean;
       notes?: string;
     }) => {
-      const { error } = await supabase
-        .from('installation_stages')
+      const { error } = await (supabase
+        .from('installation_stages') as any)
         .update({
           completed,
           completed_at: completed ? new Date().toISOString() : null,
@@ -208,8 +237,8 @@ export function useUpdateInstallationStage() {
 
       // Update project's current stage if completing
       if (completed) {
-        await supabase
-          .from('projects')
+        await (supabase
+          .from('projects') as any)
           .update({ current_stage: stage })
           .eq('id', projectId);
       }

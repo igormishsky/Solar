@@ -170,8 +170,8 @@ export function useCreateTask() {
 
   return useMutation({
     mutationFn: async (task: TaskInsert) => {
-      const { data, error } = await supabase
-        .from('tasks')
+      const { data, error } = await (supabase
+        .from('tasks') as any)
         .insert(task)
         .select()
         .single();
@@ -190,8 +190,8 @@ export function useUpdateTask() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: TaskUpdate }) => {
-      const { data: updated, error } = await supabase
-        .from('tasks')
+      const { data: updated, error } = await (supabase
+        .from('tasks') as any)
         .update(data)
         .eq('id', id)
         .select()
@@ -217,8 +217,8 @@ export function useUpdateTaskStatus() {
         completed_at: status === 'completed' ? new Date().toISOString() : null,
       };
 
-      const { data, error } = await supabase
-        .from('tasks')
+      const { data, error } = await (supabase
+        .from('tasks') as any)
         .update(updateData)
         .eq('id', id)
         .select()

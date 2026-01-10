@@ -16,9 +16,9 @@ export class AppError extends Error {
 
 export const errorHandler = (
   err: Error,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   console.error('Error:', err);
 
@@ -56,7 +56,7 @@ export const errorHandler = (
 };
 
 // Async handler wrapper
-export const asyncHandler = (fn: Function) => {
+export const asyncHandler = (fn: (req: any, res: Response, next: NextFunction) => Promise<any>) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };

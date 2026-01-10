@@ -133,7 +133,7 @@ export function Button({
                 fontSize: sizeStyle.fontSize,
                 fontWeight: typography.fontWeight.semibold,
               },
-              icon && getMarginStart(isRTL, spacing.sm),
+              icon ? { marginLeft: isRTL ? 0 : spacing.sm, marginRight: isRTL ? spacing.sm : 0 } : undefined,
               textStyle,
             ]}
           >

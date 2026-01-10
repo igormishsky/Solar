@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { z } from 'zod';
 import { AuthenticatedRequest, requirePermission } from '../middleware/auth';
 import { asyncHandler, AppError } from '../middleware/errorHandler';
@@ -20,8 +20,8 @@ const taskSchema = z.object({
 router.get(
   '/',
   requirePermission('tasks:read'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const { status, priority, assigned_to, project_id, query, page = 1, limit = 50 } = req.query;
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { status, priority, assigned_to, project_id, query, page = 1, limit = 50 } = req.query as any;
 
     let dbQuery = supabase
       .from('tasks')
@@ -46,11 +46,12 @@ router.get(
 router.get(
   '/:id',
   requirePermission('tasks:read'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params as any;
     const { data, error } = await supabase
       .from('tasks')
       .select(`*, projects (id, name), customers (id, first_name, last_name)`)
-      .eq('id', req.params.id)
+      .eq('id', id)
       .single();
     if (error) throw new AppError('Task not found', 404);
     res.json(data);
@@ -60,9 +61,9 @@ router.get(
 router.post(
   '/',
   requirePermission('tasks:create'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const validatedData = taskSchema.parse(req.body);
-    const { data, error } = await supabase.from('tasks').insert(validatedData).select().single();
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const validatedData = taskSchema.parse(req.body as any);
+    const { data, error } = await supabase.from('tasks').insert(validatedData as any).select().single();
     if (error) throw new AppError(error.message, 500);
     res.status(201).json(data);
   })
@@ -71,12 +72,13 @@ router.post(
 router.put(
   '/:id',
   requirePermission('tasks:update'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const validatedData = taskSchema.partial().parse(req.body);
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params as any;
+    const validatedData = taskSchema.partial().parse(req.body as any);
     const { data, error } = await supabase
       .from('tasks')
-      .update(validatedData)
-      .eq('id', req.params.id)
+      .update(validatedData as any)
+      .eq('id', id)
       .select()
       .single();
     if (error) throw new AppError(error.message, 500);
@@ -87,8 +89,9 @@ router.put(
 router.patch(
   '/:id/status',
   requirePermission('tasks:update'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const { status } = req.body;
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params as any;
+    const { status } = req.body as any;
     const updateData: any = {
       status,
       completed_at: status === 'completed' ? new Date().toISOString() : null,
@@ -96,7 +99,7 @@ router.patch(
     const { data, error } = await supabase
       .from('tasks')
       .update(updateData)
-      .eq('id', req.params.id)
+      .eq('id', id)
       .select()
       .single();
     if (error) throw new AppError(error.message, 500);
@@ -107,8 +110,9 @@ router.patch(
 router.delete(
   '/:id',
   requirePermission('tasks:delete'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const { error } = await supabase.from('tasks').delete().eq('id', req.params.id);
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params as any;
+    const { error } = await supabase.from('tasks').delete().eq('id', id);
     if (error) throw new AppError(error.message, 500);
     res.status(204).send();
   })

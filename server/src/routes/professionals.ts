@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { z } from 'zod';
 import { AuthenticatedRequest, requirePermission } from '../middleware/auth';
 import { asyncHandler, AppError } from '../middleware/errorHandler';
-import { supabase, PROFESSIONAL_TYPES } from '../lib';
+import { supabase } from '../lib';
 
 const router = Router();
 
@@ -20,8 +20,8 @@ const professionalSchema = z.object({
   is_electrician: z.boolean().default(false),
 });
 
-router.get('/', requirePermission('professionals:read'), asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const { professional_type, is_electrician, query } = req.query;
+router.get('/', requirePermission('professionals:read'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const { professional_type, is_electrician, query } = req.query as any;
   let dbQuery = supabase.from('professionals').select('*', { count: 'exact' });
   if (professional_type) dbQuery = dbQuery.eq('professional_type', professional_type);
   if (is_electrician !== undefined) dbQuery = dbQuery.eq('is_electrician', is_electrician === 'true');
@@ -31,35 +31,39 @@ router.get('/', requirePermission('professionals:read'), asyncHandler(async (req
   res.json({ data, total: count });
 }));
 
-router.get('/:id', requirePermission('professionals:read'), asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const { data, error } = await supabase.from('professionals').select('*').eq('id', req.params.id).single();
+router.get('/:id', requirePermission('professionals:read'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params as any;
+  const { data, error } = await supabase.from('professionals').select('*').eq('id', id).single();
   if (error) throw new AppError('Professional not found', 404);
   res.json(data);
 }));
 
-router.post('/', requirePermission('professionals:create'), asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const validatedData = professionalSchema.parse(req.body);
-  const { data, error } = await supabase.from('professionals').insert(validatedData).select().single();
+router.post('/', requirePermission('professionals:create'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const validatedData = professionalSchema.parse(req.body as any);
+  const { data, error } = await supabase.from('professionals').insert(validatedData as any).select().single();
   if (error) throw new AppError(error.message, 500);
   res.status(201).json(data);
 }));
 
-router.put('/:id', requirePermission('professionals:update'), asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const validatedData = professionalSchema.partial().parse(req.body);
-  const { data, error } = await supabase.from('professionals').update(validatedData).eq('id', req.params.id).select().single();
+router.put('/:id', requirePermission('professionals:update'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params as any;
+  const validatedData = professionalSchema.partial().parse(req.body as any);
+  const { data, error } = await supabase.from('professionals').update(validatedData as any).eq('id', id).select().single();
   if (error) throw new AppError(error.message, 500);
   res.json(data);
 }));
 
-router.delete('/:id', requirePermission('professionals:delete'), asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const { error } = await supabase.from('professionals').delete().eq('id', req.params.id);
+router.delete('/:id', requirePermission('professionals:delete'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const { id } = req.params as any;
+  const { error } = await supabase.from('professionals').delete().eq('id', id);
   if (error) throw new AppError(error.message, 500);
   res.status(204).send();
 }));
 
-router.get('/expiring/:days', requirePermission('professionals:read'), asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const days = parseInt(req.params.days) || 30;
-  const endDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+router.get('/expiring/:days', requirePermission('professionals:read'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const { days } = req.params as any;
+  const daysNum = parseInt(days) || 30;
+  const endDate = new Date(Date.now() + daysNum * 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await supabase
     .from('professionals')
     .select('*')

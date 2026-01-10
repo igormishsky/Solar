@@ -65,7 +65,7 @@ const formatFileSize = (bytes: number | null) => {
 
 export default function ProjectDocumentsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+  const _router = useRouter();
   const { t } = useTranslation();
   const { isRTL } = useLanguageStore();
   const user = useAuthStore((state) => state.user);

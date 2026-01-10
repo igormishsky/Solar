@@ -105,7 +105,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Create user profile
       if (data.user) {
-        await supabase.from('users').insert({
+        await (supabase.from('users') as any).insert({
           id: data.user.id,
           email: email,
           full_name: fullName,

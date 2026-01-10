@@ -36,7 +36,7 @@ export default function TasksScreen() {
   const router = useRouter();
   const { isRTL } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const { data: tasks = [], isLoading } = useTasks({ query: searchQuery });
+  const { data: tasks = [], isLoading: _isLoading } = useTasks({ query: searchQuery });
 
   const renderTaskItem = ({ item }: { item: Task }) => {
     const priorityColors = getPriorityColors(item.priority);
@@ -115,7 +115,7 @@ export default function TasksScreen() {
         {/* Task List */}
         {tasks.length > 0 ? (
           <FlatList
-            data={tasks}
+            data={tasks as any[]}
             renderItem={renderTaskItem}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}

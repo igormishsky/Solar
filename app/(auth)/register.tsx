@@ -140,7 +140,7 @@ export default function RegisterScreen() {
               />
             )}
           />
-          {errors.fullName && (
+          {errors.fullName?.message && (
             <Text
               style={{
                 color: '#ef4444',
@@ -149,7 +149,7 @@ export default function RegisterScreen() {
                 textAlign: isRTL ? 'right' : 'left',
               }}
             >
-              {errors.fullName.message}
+              {String(errors.fullName.message)}
             </Text>
           )}
         </View>
@@ -190,7 +190,7 @@ export default function RegisterScreen() {
               />
             )}
           />
-          {errors.email && (
+          {errors.email?.message && (
             <Text
               style={{
                 color: '#ef4444',
@@ -199,7 +199,7 @@ export default function RegisterScreen() {
                 textAlign: isRTL ? 'right' : 'left',
               }}
             >
-              {errors.email.message}
+              {String(errors.email.message)}
             </Text>
           )}
         </View>
@@ -239,7 +239,7 @@ export default function RegisterScreen() {
               />
             )}
           />
-          {errors.password && (
+          {errors.password?.message && (
             <Text
               style={{
                 color: '#ef4444',
@@ -248,7 +248,7 @@ export default function RegisterScreen() {
                 textAlign: isRTL ? 'right' : 'left',
               }}
             >
-              {errors.password.message}
+              {String(errors.password.message)}
             </Text>
           )}
         </View>
@@ -288,7 +288,7 @@ export default function RegisterScreen() {
               />
             )}
           />
-          {errors.confirmPassword && (
+          {errors.confirmPassword?.message && (
             <Text
               style={{
                 color: '#ef4444',
@@ -297,7 +297,7 @@ export default function RegisterScreen() {
                 textAlign: isRTL ? 'right' : 'left',
               }}
             >
-              {errors.confirmPassword.message}
+              {String(errors.confirmPassword.message)}
             </Text>
           )}
         </View>

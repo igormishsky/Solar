@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { z } from 'zod';
 import { AuthenticatedRequest, requirePermission } from '../middleware/auth';
 import { asyncHandler, AppError } from '../middleware/errorHandler';
@@ -41,8 +41,8 @@ const customerSchema = z.object({
 router.get(
   '/',
   requirePermission('customers:read'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const { customer_type, city, query, page = 1, limit = 50 } = req.query;
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { customer_type, city, query, page = 1, limit = 50 } = req.query as any;
 
     let dbQuery = supabase.from('customers').select('*', { count: 'exact' });
 
@@ -87,8 +87,8 @@ router.get(
 router.get(
   '/:id',
   requirePermission('customers:read'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const { id } = req.params;
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params as any;
 
     const { data, error } = await supabase
       .from('customers')
@@ -106,12 +106,12 @@ router.get(
 router.post(
   '/',
   requirePermission('customers:create'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const validatedData = customerSchema.parse(req.body);
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const validatedData = customerSchema.parse(req.body as any);
 
     const { data, error } = await supabase
       .from('customers')
-      .insert(validatedData)
+      .insert(validatedData as any)
       .select()
       .single();
 
@@ -125,13 +125,13 @@ router.post(
 router.put(
   '/:id',
   requirePermission('customers:update'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const { id } = req.params;
-    const validatedData = customerSchema.partial().parse(req.body);
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params as any;
+    const validatedData = customerSchema.partial().parse(req.body as any);
 
     const { data, error } = await supabase
       .from('customers')
-      .update(validatedData)
+      .update(validatedData as any)
       .eq('id', id)
       .select()
       .single();
@@ -146,8 +146,8 @@ router.put(
 router.delete(
   '/:id',
   requirePermission('customers:delete'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const { id } = req.params;
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params as any;
 
     const { error } = await supabase.from('customers').delete().eq('id', id);
 

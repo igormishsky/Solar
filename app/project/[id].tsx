@@ -218,7 +218,7 @@ export default function ProjectDetailScreen() {
         {/* Customer Info */}
         {project.customers && (
           <TouchableOpacity
-            onPress={() => router.push(`/customer/${project.customers.id}`)}
+            onPress={() => router.push(`/customer/${project.customers?.id}`)}
           >
             <Section
               title={t('tasks.relatedCustomer')}

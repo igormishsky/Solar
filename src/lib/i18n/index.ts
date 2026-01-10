@@ -11,7 +11,8 @@ const resources = {
 };
 
 // Get device locale, default to Hebrew for Israeli market
-const deviceLocale = Localization.locale?.split('-')[0] || 'he';
+const locales = Localization.getLocales();
+const deviceLocale = locales?.[0]?.languageCode || 'he';
 const defaultLanguage = ['en', 'he'].includes(deviceLocale) ? deviceLocale : 'he';
 
 i18n
@@ -23,7 +24,7 @@ i18n
     interpolation: {
       escapeValue: false,
     },
-    compatibilityJSON: 'v3',
+    compatibilityJSON: 'v4',
   });
 
 export default i18n;

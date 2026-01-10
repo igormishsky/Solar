@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { z } from 'zod';
 import { AuthenticatedRequest, requirePermission } from '../middleware/auth';
 import { asyncHandler, AppError } from '../middleware/errorHandler';
@@ -34,8 +34,8 @@ const projectSchema = z.object({
 router.get(
   '/',
   requirePermission('projects:read'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const { status, customer_id, query, page = 1, limit = 50 } = req.query;
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { status, customer_id, query, page = 1, limit = 50 } = req.query as any;
 
     let dbQuery = supabase
       .from('projects')
@@ -69,8 +69,8 @@ router.get(
 router.get(
   '/:id',
   requirePermission('projects:read'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const { id } = req.params;
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params as any;
 
     const { data, error } = await supabase
       .from('projects')
@@ -92,8 +92,8 @@ router.get(
 router.post(
   '/',
   requirePermission('projects:create'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const validatedData = projectSchema.parse(req.body);
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const validatedData = projectSchema.parse(req.body as any);
 
     const { data, error } = await supabase
       .from('projects')
@@ -120,9 +120,9 @@ router.post(
 router.put(
   '/:id',
   requirePermission('projects:update'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const { id } = req.params;
-    const validatedData = projectSchema.partial().parse(req.body);
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params as any;
+    const validatedData = projectSchema.partial().parse(req.body as any);
 
     const { data, error } = await supabase
       .from('projects')
@@ -140,8 +140,8 @@ router.put(
 router.delete(
   '/:id',
   requirePermission('projects:delete'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const { id } = req.params;
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params as any;
     const { error } = await supabase.from('projects').delete().eq('id', id);
     if (error) throw new AppError(error.message, 500);
     res.status(204).send();
@@ -152,8 +152,8 @@ router.delete(
 router.put(
   '/:id/stages/:stage',
   requirePermission('projects:update'),
-  asyncHandler(async (req: AuthenticatedRequest, res) => {
-    const { id, stage } = req.params;
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id, stage } = req.params as any;
     const { completed, notes } = req.body;
 
     const { error } = await supabase

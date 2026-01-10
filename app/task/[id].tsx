@@ -311,7 +311,7 @@ export default function TaskDetailScreen() {
 
         {/* Related Project */}
         {task.projects && (
-          <TouchableOpacity onPress={() => router.push(`/project/${task.projects.id}`)}>
+          <TouchableOpacity onPress={() => router.push(`/project/${task.projects?.id}`)}>
             <Section
               title={t('tasks.relatedProject')}
               icon={<FolderKanban size={20} color={colors.primary} />}
@@ -319,7 +319,7 @@ export default function TaskDetailScreen() {
             >
               <View style={[getFlexDirection(isRTL), { alignItems: 'center', justifyContent: 'space-between' }]}>
                 <Text style={[sharedStyles.title, getTextAlign(isRTL)]}>
-                  {task.projects.name}
+                  {task.projects?.name}
                 </Text>
                 <ChevronRight
                   size={20}
@@ -333,7 +333,7 @@ export default function TaskDetailScreen() {
 
         {/* Related Customer */}
         {task.customers && (
-          <TouchableOpacity onPress={() => router.push(`/customer/${task.customers.id}`)}>
+          <TouchableOpacity onPress={() => router.push(`/customer/${task.customers?.id}`)}>
             <Section
               title={t('tasks.relatedCustomer')}
               icon={<User size={20} color={colors.primary} />}
@@ -341,7 +341,7 @@ export default function TaskDetailScreen() {
             >
               <View style={[getFlexDirection(isRTL), { alignItems: 'center', justifyContent: 'space-between' }]}>
                 <Text style={[sharedStyles.title, getTextAlign(isRTL)]}>
-                  {task.customers.first_name} {task.customers.last_name}
+                  {task.customers?.first_name} {task.customers?.last_name}
                 </Text>
                 <ChevronRight
                   size={20}

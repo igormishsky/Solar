@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
 import { AuthenticatedRequest, requirePermission } from '../middleware/auth';
 import { asyncHandler, AppError } from '../middleware/errorHandler';
@@ -7,7 +7,7 @@ const router = Router();
 const supabase = createClient(process.env.SUPABASE_URL || '', process.env.SUPABASE_SERVICE_KEY || '');
 
 // Dashboard stats
-router.get('/dashboard', requirePermission('reports:view'), asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/dashboard', requirePermission('reports:view'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
@@ -31,7 +31,7 @@ router.get('/dashboard', requirePermission('reports:view'), asyncHandler(async (
 }));
 
 // Summary report
-router.get('/summary', requirePermission('reports:view'), asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/summary', requirePermission('reports:view'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const [customers, projects, activeProjects, completedProjects, tasks, pendingTasks, professionals] = await Promise.all([
     supabase.from('customers').select('*', { count: 'exact', head: true }),
     supabase.from('projects').select('*', { count: 'exact', head: true }),
@@ -55,19 +55,20 @@ router.get('/summary', requirePermission('reports:view'), asyncHandler(async (re
 }));
 
 // Project report
-router.get('/project/:projectId', requirePermission('reports:view'), asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/project/:projectId', requirePermission('reports:view'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const { projectId } = req.params as any;
   const { data: project, error: projectError } = await supabase
     .from('projects')
     .select(`*, customers (*), installation_stages (*), project_professionals (*, professionals (*))`)
-    .eq('id', req.params.projectId)
+    .eq('id', projectId)
     .single();
 
   if (projectError) throw new AppError('Project not found', 404);
 
   const [tasks, forms, documents] = await Promise.all([
-    supabase.from('tasks').select('*').eq('project_id', req.params.projectId),
-    supabase.from('forms').select('*').eq('project_id', req.params.projectId),
-    supabase.from('documents').select('*').eq('project_id', req.params.projectId),
+    supabase.from('tasks').select('*').eq('project_id', projectId),
+    supabase.from('forms').select('*').eq('project_id', projectId),
+    supabase.from('documents').select('*').eq('project_id', projectId),
   ]);
 
   res.json({
@@ -80,7 +81,7 @@ router.get('/project/:projectId', requirePermission('reports:view'), asyncHandle
 }));
 
 // Projects by status
-router.get('/projects-by-status', requirePermission('reports:view'), asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/projects-by-status', requirePermission('reports:view'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const statuses = ['pending', 'in_progress', 'completed', 'on_hold', 'cancelled'];
   const results = await Promise.all(
     statuses.map((status) =>
@@ -97,7 +98,7 @@ router.get('/projects-by-status', requirePermission('reports:view'), asyncHandle
 }));
 
 // Tasks by priority
-router.get('/tasks-by-priority', requirePermission('reports:view'), asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/tasks-by-priority', requirePermission('reports:view'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const priorities = ['low', 'medium', 'high', 'urgent'];
   const results = await Promise.all(
     priorities.map((priority) =>
@@ -114,9 +115,10 @@ router.get('/tasks-by-priority', requirePermission('reports:view'), asyncHandler
 }));
 
 // Expiring licenses
-router.get('/expiring-licenses', requirePermission('reports:view'), asyncHandler(async (req: AuthenticatedRequest, res) => {
-  const days = parseInt(req.query.days as string) || 30;
-  const endDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+router.get('/expiring-licenses', requirePermission('reports:view'), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const { days } = req.query as any;
+  const daysNum = parseInt(days) || 30;
+  const endDate = new Date(Date.now() + daysNum * 24 * 60 * 60 * 1000).toISOString();
 
   const { data, error } = await supabase
     .from('professionals')

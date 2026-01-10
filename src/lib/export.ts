@@ -56,7 +56,7 @@ export async function exportCustomers(): Promise<void> {
 
   if (error) throw error;
 
-  const exportData = data.map((customer) => ({
+  const exportData = (data as any[]).map((customer) => ({
     'First Name': customer.first_name,
     'Last Name': customer.last_name,
     'ID Number': customer.id_number || '',
@@ -165,7 +165,7 @@ export async function exportProfessionals(): Promise<void> {
 
   if (error) throw error;
 
-  const exportData = data.map((pro) => ({
+  const exportData = (data as any[]).map((pro) => ({
     'Name': pro.name,
     'Type': pro.professional_type,
     'Company Name': pro.company_name || '',
@@ -203,6 +203,8 @@ export async function exportProjectReport(projectId: string): Promise<void> {
 
   if (projectError) throw projectError;
 
+  const projectData = project as any;
+
   const { data: tasks } = await supabase
     .from('tasks')
     .select('*')
@@ -218,46 +220,46 @@ export async function exportProjectReport(projectId: string): Promise<void> {
     {
       Section: 'Project Info',
       Field: 'Name',
-      Value: project.name,
+      Value: projectData.name,
     },
     {
       Section: 'Project Info',
       Field: 'Status',
-      Value: project.status,
+      Value: projectData.status,
     },
     {
       Section: 'Project Info',
       Field: 'Current Stage',
-      Value: project.current_stage,
+      Value: projectData.current_stage,
     },
     {
       Section: 'Project Info',
       Field: 'System Size (kW)',
-      Value: project.system_size_kw || '-',
+      Value: projectData.system_size_kw || '-',
     },
     {
       Section: 'Customer',
       Field: 'Name',
-      Value: project.customers
-        ? `${project.customers.first_name} ${project.customers.last_name}`
+      Value: projectData.customers
+        ? `${projectData.customers.first_name} ${projectData.customers.last_name}`
         : '-',
     },
     {
       Section: 'Customer',
       Field: 'Phone',
-      Value: project.customers?.phone_primary || '-',
+      Value: projectData.customers?.phone_primary || '-',
     },
     {
       Section: 'Customer',
       Field: 'Email',
-      Value: project.customers?.email || '-',
+      Value: projectData.customers?.email || '-',
     },
-    ...(project.installation_stages || []).map((stage: any) => ({
+    ...(projectData.installation_stages || []).map((stage: any) => ({
       Section: 'Installation Stages',
       Field: stage.stage,
       Value: stage.completed ? `Completed (${new Date(stage.completed_at).toLocaleDateString()})` : 'Pending',
     })),
-    ...(project.project_professionals || []).map((pp: any) => ({
+    ...(projectData.project_professionals || []).map((pp: any) => ({
       Section: 'Team',
       Field: pp.professionals?.professional_type || 'Unknown',
       Value: pp.professionals?.name || '-',
@@ -274,7 +276,7 @@ export async function exportProjectReport(projectId: string): Promise<void> {
     })),
   ];
 
-  await exportToCSV(reportData, `project_report_${project.name}_${Date.now()}`);
+  await exportToCSV(reportData, `project_report_${projectData.name}_${Date.now()}`);
 }
 
 // Generate summary statistics

@@ -98,8 +98,8 @@ export function useCreateProfessional() {
 
   return useMutation({
     mutationFn: async (professional: ProfessionalInsert) => {
-      const { data, error } = await supabase
-        .from('professionals')
+      const { data, error } = await (supabase
+        .from('professionals') as any)
         .insert(professional)
         .select()
         .single();
@@ -118,8 +118,8 @@ export function useUpdateProfessional() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: ProfessionalUpdate }) => {
-      const { data: updated, error } = await supabase
-        .from('professionals')
+      const { data: updated, error } = await (supabase
+        .from('professionals') as any)
         .update(data)
         .eq('id', id)
         .select()
@@ -162,8 +162,8 @@ export function useAssignProfessionalToProject() {
       professionalId: string;
       role?: string;
     }) => {
-      const { data, error } = await supabase
-        .from('project_professionals')
+      const { data, error } = await (supabase
+        .from('project_professionals') as any)
         .insert({
           project_id: projectId,
           professional_id: professionalId,

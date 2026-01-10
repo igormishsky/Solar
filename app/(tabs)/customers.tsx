@@ -35,7 +35,7 @@ export default function CustomersScreen() {
   const router = useRouter();
   const { isRTL } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const { data: customers = [], isLoading } = useCustomers({ query: searchQuery });
+  const { data: customers = [], isLoading: _isLoading } = useCustomers({ query: searchQuery });
 
   const renderCustomerItem = ({ item }: { item: Customer }) => (
     <TouchableOpacity style={sharedStyles.card} onPress={() => router.push(`/customer/${item.id}`)}>

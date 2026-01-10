@@ -75,6 +75,23 @@ interface RecentActivity {
   timestamp: string;
 }
 
+interface ProjectActivityData {
+  id: string;
+  name: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface TaskActivityData {
+  id: string;
+  title: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  completed_at: string | null;
+}
+
 export function useRecentActivity(limit: number = 10) {
   return useQuery({
     queryKey: queryKeys.dashboard.recentActivity,
@@ -96,7 +113,7 @@ export function useRecentActivity(limit: number = 10) {
       const activities: RecentActivity[] = [];
 
       // Process projects
-      projectsResult.data?.forEach((project) => {
+      (projectsResult.data as ProjectActivityData[] | null)?.forEach((project) => {
         const isNew = new Date(project.created_at).getTime() === new Date(project.updated_at).getTime();
         activities.push({
           id: project.id,
@@ -108,7 +125,7 @@ export function useRecentActivity(limit: number = 10) {
       });
 
       // Process tasks
-      tasksResult.data?.forEach((task) => {
+      (tasksResult.data as TaskActivityData[] | null)?.forEach((task) => {
         const isNew = new Date(task.created_at).getTime() === new Date(task.updated_at).getTime();
         activities.push({
           id: task.id,

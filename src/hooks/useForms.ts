@@ -80,8 +80,8 @@ export function useCreateForm() {
 
   return useMutation({
     mutationFn: async (form: FormInsert) => {
-      const { data, error } = await supabase
-        .from('forms')
+      const { data, error } = await (supabase
+        .from('forms') as any)
         .insert(form)
         .select()
         .single();
@@ -101,8 +101,8 @@ export function useUpdateForm() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: FormUpdate }) => {
-      const { data: updated, error } = await supabase
-        .from('forms')
+      const { data: updated, error } = await (supabase
+        .from('forms') as any)
         .update(data)
         .eq('id', id)
         .select()
@@ -138,8 +138,8 @@ export function useUpdateFormStatus() {
         signed_at: status === 'approved' ? new Date().toISOString() : undefined,
       };
 
-      const { data, error } = await supabase
-        .from('forms')
+      const { data, error } = await (supabase
+        .from('forms') as any)
         .update(updateData)
         .eq('id', id)
         .select()
@@ -184,8 +184,8 @@ export function useInitializeProjectForms() {
         status: 'draft' as FormStatus,
       }));
 
-      const { data, error } = await supabase
-        .from('forms')
+      const { data, error } = await (supabase
+        .from('forms') as any)
         .insert(formsToCreate)
         .select();
 

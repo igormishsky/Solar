@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import {
   Globe,
-  Moon,
   Bell,
   User,
   Shield,

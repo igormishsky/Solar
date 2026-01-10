@@ -12,7 +12,7 @@ import { useLanguageStore } from '@/stores/useLanguageStore';
 
 export default function TabLayout() {
   const { t } = useTranslation();
-  const { isRTL } = useLanguageStore();
+  const { isRTL: _isRTL } = useLanguageStore();
 
   return (
     <Tabs

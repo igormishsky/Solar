@@ -36,7 +36,7 @@ export default function ProjectsScreen() {
   const router = useRouter();
   const { isRTL } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const { data: projects = [], isLoading } = useProjects({ query: searchQuery });
+  const { data: projects = [], isLoading: _isLoading } = useProjects({ query: searchQuery });
 
   const renderProjectItem = ({ item }: { item: Project }) => {
     const statusColors = getStatusColors(item.status);
@@ -109,7 +109,7 @@ export default function ProjectsScreen() {
         {/* Project List */}
         {projects.length > 0 ? (
           <FlatList
-            data={projects}
+            data={projects as any[]}
             renderItem={renderProjectItem}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
