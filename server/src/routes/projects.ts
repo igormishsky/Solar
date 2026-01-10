@@ -1,15 +1,10 @@
 import { Router } from 'express';
-import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { AuthenticatedRequest, requirePermission } from '../middleware/auth';
 import { asyncHandler, AppError } from '../middleware/errorHandler';
+import { supabase, INSTALLATION_STAGES } from '../lib';
 
 const router = Router();
-
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_KEY || ''
-);
 
 const projectSchema = z.object({
   customer_id: z.string().uuid(),
@@ -108,20 +103,9 @@ router.post(
 
     if (error) throw new AppError(error.message, 500);
 
-    // Create installation stages
-    const stages = [
-      'request_opened',
-      'payment_processed',
-      'department_response',
-      'sync_compliance_request',
-      'sync_request',
-      'sync_complete',
-      'commercial_activation',
-      'standing_order_form',
-    ];
-
+    // Create installation stages using shared constants
     await supabase.from('installation_stages').insert(
-      stages.map((stage) => ({
+      INSTALLATION_STAGES.map((stage) => ({
         project_id: data.id,
         stage,
         completed: false,

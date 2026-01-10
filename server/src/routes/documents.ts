@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import { createClient } from '@supabase/supabase-js';
 import { AuthenticatedRequest, requirePermission } from '../middleware/auth';
 import { asyncHandler, AppError } from '../middleware/errorHandler';
+import { supabase } from '../lib';
 
 const router = Router();
-const supabase = createClient(process.env.SUPABASE_URL || '', process.env.SUPABASE_SERVICE_KEY || '');
 
 router.get('/project/:projectId', requirePermission('documents:read'), asyncHandler(async (req: AuthenticatedRequest, res) => {
   const { data, error } = await supabase

@@ -1,21 +1,14 @@
-import { useState } from 'react';
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
-  Edit2,
-  Save,
-  X,
   FolderKanban,
   User,
   Phone,
@@ -23,7 +16,6 @@ import {
   Calendar,
   Zap,
   CheckCircle2,
-  Circle,
   Users,
   FileText,
   Trash2,
@@ -31,7 +23,7 @@ import {
 } from 'lucide-react-native';
 
 import { useLanguageStore } from '@/stores/useLanguageStore';
-import { useProject, useUpdateProject, useUpdateInstallationStage, useDeleteProject } from '@/hooks';
+import { useProject, useUpdateInstallationStage, useDeleteProject } from '@/hooks';
 import {
   sharedStyles,
   colors,
@@ -40,58 +32,16 @@ import {
   getMarginStart,
   getStatusColors,
 } from '@/styles';
+import {
+  Section,
+  Field,
+  SimpleHeader,
+  LoadingScreen,
+  ErrorScreen,
+  InfoRow,
+} from '@/components';
+import { INSTALLATION_STAGES } from '@/constants';
 import { InstallationStage } from '@/types/database.types';
-
-const INSTALLATION_STAGES: InstallationStage[] = [
-  'request_opened',
-  'payment_processed',
-  'department_response',
-  'sync_compliance_request',
-  'sync_request',
-  'sync_complete',
-  'commercial_activation',
-  'standing_order_form',
-];
-
-type SectionProps = {
-  title: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  isRTL: boolean;
-};
-
-function Section({ title, icon, children, isRTL }: SectionProps) {
-  return (
-    <View style={[sharedStyles.card, { marginBottom: 16 }]}>
-      <View style={[getFlexDirection(isRTL), { alignItems: 'center', marginBottom: 16 }]}>
-        {icon}
-        <Text style={[sharedStyles.title, getMarginStart(isRTL, 8), { fontSize: 18 }]}>
-          {title}
-        </Text>
-      </View>
-      {children}
-    </View>
-  );
-}
-
-type FieldProps = {
-  label: string;
-  value: string | number | null | undefined;
-  isRTL: boolean;
-};
-
-function Field({ label, value, isRTL }: FieldProps) {
-  return (
-    <View style={{ marginBottom: 12 }}>
-      <Text style={[sharedStyles.caption, getTextAlign(isRTL), { marginBottom: 4 }]}>
-        {label}
-      </Text>
-      <Text style={[sharedStyles.subtitle, getTextAlign(isRTL), { fontSize: 15, color: colors.gray[700] }]}>
-        {value ?? '-'}
-      </Text>
-    </View>
-  );
-}
 
 type StageItemProps = {
   stage: InstallationStage;
@@ -167,7 +117,6 @@ export default function ProjectDetailScreen() {
   const { isRTL } = useLanguageStore();
 
   const { data: project, isLoading, error } = useProject(id);
-  const updateProject = useUpdateProject();
   const updateStage = useUpdateInstallationStage();
   const deleteProject = useDeleteProject();
 
@@ -206,21 +155,11 @@ export default function ProjectDetailScreen() {
   };
 
   if (isLoading) {
-    return (
-      <SafeAreaView style={[sharedStyles.pageContainer, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </SafeAreaView>
-    );
+    return <LoadingScreen />;
   }
 
   if (error || !project) {
-    return (
-      <SafeAreaView style={sharedStyles.pageContainer}>
-        <View style={sharedStyles.emptyState}>
-          <Text style={sharedStyles.emptyStateText}>{t('errors.notFound')}</Text>
-        </View>
-      </SafeAreaView>
-    );
+    return <ErrorScreen message={t('errors.notFound')} />;
   }
 
   const statusColors = getStatusColors(project.status);
@@ -230,36 +169,15 @@ export default function ProjectDetailScreen() {
 
   return (
     <SafeAreaView style={sharedStyles.pageContainer} edges={['top']}>
-      {/* Header */}
-      <View
-        style={[
-          getFlexDirection(isRTL),
-          {
-            backgroundColor: colors.primary,
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          },
-        ]}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={[getFlexDirection(isRTL), { alignItems: 'center' }]}
-        >
-          <ArrowLeft
-            size={24}
-            color={colors.white}
-            style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
-          />
-          <Text style={[{ color: colors.white, fontSize: 18, fontWeight: '600' }, getMarginStart(isRTL, 8)]}>
-            {t('projects.projectDetails')}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleDelete}>
-          <Trash2 size={24} color={colors.white} />
-        </TouchableOpacity>
-      </View>
+      <SimpleHeader
+        title={t('projects.projectDetails')}
+        isRTL={isRTL}
+        rightContent={
+          <TouchableOpacity onPress={handleDelete}>
+            <Trash2 size={24} color={colors.white} />
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {/* Project Header Card */}
@@ -313,20 +231,18 @@ export default function ProjectDetailScreen() {
                     {project.customers.first_name} {project.customers.last_name}
                   </Text>
                   {project.customers.phone_primary && (
-                    <View style={[getFlexDirection(isRTL), { alignItems: 'center', marginTop: 4 }]}>
-                      <Phone size={14} color={colors.gray[400]} />
-                      <Text style={[sharedStyles.subtitle, getMarginStart(isRTL, 4)]}>
-                        {project.customers.phone_primary}
-                      </Text>
-                    </View>
+                    <InfoRow
+                      icon={<Phone size={14} color={colors.gray[400]} />}
+                      text={project.customers.phone_primary}
+                      isRTL={isRTL}
+                    />
                   )}
                   {project.customers.email && (
-                    <View style={[getFlexDirection(isRTL), { alignItems: 'center', marginTop: 2 }]}>
-                      <Mail size={14} color={colors.gray[400]} />
-                      <Text style={[sharedStyles.subtitle, getMarginStart(isRTL, 4)]}>
-                        {project.customers.email}
-                      </Text>
-                    </View>
+                    <InfoRow
+                      icon={<Mail size={14} color={colors.gray[400]} />}
+                      text={project.customers.email}
+                      isRTL={isRTL}
+                    />
                   )}
                 </View>
                 <ChevronRight
@@ -464,12 +380,11 @@ export default function ProjectDetailScreen() {
                     {pp.role || t(`professionals.types.${pp.professionals?.professional_type}`)}
                   </Text>
                   {pp.professionals?.phone && (
-                    <View style={[getFlexDirection(isRTL), { alignItems: 'center', marginTop: 4 }]}>
-                      <Phone size={12} color={colors.gray[400]} />
-                      <Text style={[sharedStyles.caption, getMarginStart(isRTL, 4)]}>
-                        {pp.professionals.phone}
-                      </Text>
-                    </View>
+                    <InfoRow
+                      icon={<Phone size={12} color={colors.gray[400]} />}
+                      text={pp.professionals.phone}
+                      isRTL={isRTL}
+                    />
                   )}
                 </View>
               </View>

@@ -1,6 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Tables, InsertTables, UpdateTables, FormStatus } from '@/types/database.types';
+import { FORM_TYPES } from '@/constants';
+
+// Re-export for backward compatibility
+export { FORM_TYPES };
 
 type Form = Tables<'forms'>;
 type FormInsert = InsertTables<'forms'>;
@@ -11,21 +15,6 @@ interface FormFilters {
   status?: FormStatus;
   form_type?: string;
 }
-
-// Define all form types as per Israeli regulations
-export const FORM_TYPES = [
-  { type: 'layout_plan', name: 'Layout Plan + Grounding', name_he: 'תכנית פריסה + הארקות' },
-  { type: 'pv_agreement', name: 'PV Agreement', name_he: 'הסכם PV' },
-  { type: 'electrician_declaration', name: 'Executing Electrician Declaration', name_he: 'הצהרת חשמלאי מבצע' },
-  { type: 'installation_submission', name: 'Installation Submission for Inspection', name_he: 'הגשת ההתקנה לביקורת' },
-  { type: 'inverter_calibration', name: 'Inverter Calibration Affidavit', name_he: 'תצהיר כיול ממיר' },
-  { type: 'constructor_approval', name: 'Constructor Approval', name_he: 'אישור קונסטרוקטור' },
-  { type: 'regulation_24', name: 'Installation Declaration per Regulation 24', name_he: 'הצהרת התקנה לפי תקנה 24' },
-  { type: 'pv_inspection', name: 'PV Installation Inspection Form', name_he: 'טופס ביקורת התקנת PV' },
-  { type: 'form_1400', name: 'Form 1400', name_he: 'טופס 1400' },
-  { type: 'permit_exempt', name: 'Permit-Exempt Work Report', name_he: 'דוח עבודה פטורה מהיתר' },
-  { type: 'threshold_compliance', name: 'Central Form for Threshold Compliance', name_he: 'טופס מרכזי לעמידה בסף' },
-] as const;
 
 export function useForms(filters?: FormFilters) {
   return useQuery({

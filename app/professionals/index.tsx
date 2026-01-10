@@ -5,8 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
@@ -16,9 +14,7 @@ import {
   Plus,
   Users,
   Phone,
-  Mail,
   ChevronRight,
-  ArrowLeft,
   AlertTriangle,
   Building2,
 } from 'lucide-react-native';
@@ -32,6 +28,12 @@ import {
   getTextAlign,
   getMarginStart,
 } from '@/styles';
+import {
+  SimpleHeader,
+  LoadingIndicator,
+  EmptyState,
+} from '@/components';
+import { PROFESSIONAL_TYPES } from '@/constants';
 import { ProfessionalType } from '@/types/database.types';
 
 type Professional = {
@@ -44,14 +46,6 @@ type Professional = {
   license_expiry: string | null;
   is_electrician: boolean;
 };
-
-const PROFESSIONAL_TYPES: ProfessionalType[] = [
-  'installing_company',
-  'installing_contractor',
-  'planner',
-  'inspecting_electrician',
-  'constructor',
-];
 
 export default function ProfessionalsScreen() {
   const { t } = useTranslation();
@@ -144,33 +138,10 @@ export default function ProfessionalsScreen() {
 
   return (
     <SafeAreaView style={sharedStyles.pageContainer} edges={['top']}>
-      {/* Header */}
-      <View
-        style={[
-          getFlexDirection(isRTL),
-          {
-            backgroundColor: colors.primary,
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          },
-        ]}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={[getFlexDirection(isRTL), { alignItems: 'center' }]}
-        >
-          <ArrowLeft
-            size={24}
-            color={colors.white}
-            style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
-          />
-          <Text style={[{ color: colors.white, fontSize: 18, fontWeight: '600' }, getMarginStart(isRTL, 8)]}>
-            {t('professionals.title')}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <SimpleHeader
+        title={t('professionals.title')}
+        isRTL={isRTL}
+      />
 
       <View style={sharedStyles.pageContent}>
         {/* Search Bar */}
@@ -247,9 +218,7 @@ export default function ProfessionalsScreen() {
 
         {/* Professional List */}
         {isLoading ? (
-          <View style={sharedStyles.emptyState}>
-            <ActivityIndicator size="large" color={colors.primary} />
-          </View>
+          <LoadingIndicator />
         ) : professionals.length > 0 ? (
           <FlatList
             data={professionals}
@@ -258,12 +227,10 @@ export default function ProfessionalsScreen() {
             showsVerticalScrollIndicator={false}
           />
         ) : (
-          <View style={sharedStyles.emptyState}>
-            <Users size={48} color={colors.gray[300]} />
-            <Text style={sharedStyles.emptyStateText}>
-              {t('professionals.noProfessionals')}
-            </Text>
-          </View>
+          <EmptyState
+            icon={<Users size={48} color={colors.gray[300]} />}
+            title={t('professionals.noProfessionals')}
+          />
         )}
       </View>
     </SafeAreaView>

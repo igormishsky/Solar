@@ -6,16 +6,11 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
-  Edit2,
-  Save,
-  X,
   User,
   Phone,
   Mail,
@@ -24,7 +19,6 @@ import {
   Zap,
   FileText,
   FolderKanban,
-  Trash2,
 } from 'lucide-react-native';
 
 import { useLanguageStore } from '@/stores/useLanguageStore';
@@ -35,68 +29,15 @@ import {
   getFlexDirection,
   getTextAlign,
   getMarginStart,
-  shadows,
 } from '@/styles';
-
-type SectionProps = {
-  title: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  isRTL: boolean;
-};
-
-function Section({ title, icon, children, isRTL }: SectionProps) {
-  return (
-    <View style={[sharedStyles.card, { marginBottom: 16 }]}>
-      <View style={[getFlexDirection(isRTL), { alignItems: 'center', marginBottom: 16 }]}>
-        {icon}
-        <Text style={[sharedStyles.title, getMarginStart(isRTL, 8), { fontSize: 18 }]}>
-          {title}
-        </Text>
-      </View>
-      {children}
-    </View>
-  );
-}
-
-type FieldProps = {
-  label: string;
-  value: string | null | undefined;
-  isRTL: boolean;
-  editable?: boolean;
-  onChangeText?: (text: string) => void;
-};
-
-function Field({ label, value, isRTL, editable, onChangeText }: FieldProps) {
-  return (
-    <View style={{ marginBottom: 12 }}>
-      <Text style={[sharedStyles.caption, getTextAlign(isRTL), { marginBottom: 4 }]}>
-        {label}
-      </Text>
-      {editable ? (
-        <TextInput
-          style={[
-            sharedStyles.searchInput,
-            {
-              backgroundColor: colors.gray[50],
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: colors.gray[200],
-              padding: 12,
-            },
-            getTextAlign(isRTL),
-          ]}
-          value={value || ''}
-          onChangeText={onChangeText}
-        />
-      ) : (
-        <Text style={[sharedStyles.subtitle, getTextAlign(isRTL), { fontSize: 15, color: colors.gray[700] }]}>
-          {value || '-'}
-        </Text>
-      )}
-    </View>
-  );
-}
+import {
+  Section,
+  Field,
+  DetailHeader,
+  LoadingScreen,
+  ErrorScreen,
+  InfoRow,
+} from '@/components';
 
 export default function CustomerDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -173,75 +114,27 @@ export default function CustomerDetailScreen() {
   };
 
   if (isLoading) {
-    return (
-      <SafeAreaView style={[sharedStyles.pageContainer, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </SafeAreaView>
-    );
+    return <LoadingScreen />;
   }
 
   if (error || !customer) {
-    return (
-      <SafeAreaView style={sharedStyles.pageContainer}>
-        <View style={sharedStyles.emptyState}>
-          <Text style={sharedStyles.emptyStateText}>{t('errors.notFound')}</Text>
-        </View>
-      </SafeAreaView>
-    );
+    return <ErrorScreen message={t('errors.notFound')} />;
   }
 
   const displayData = isEditing ? editData : customer;
 
   return (
     <SafeAreaView style={sharedStyles.pageContainer} edges={['top']}>
-      {/* Header */}
-      <View
-        style={[
-          getFlexDirection(isRTL),
-          {
-            backgroundColor: colors.primary,
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          },
-        ]}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={[getFlexDirection(isRTL), { alignItems: 'center' }]}
-        >
-          <ArrowLeft
-            size={24}
-            color={colors.white}
-            style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
-          />
-          <Text style={[{ color: colors.white, fontSize: 18, fontWeight: '600' }, getMarginStart(isRTL, 8)]}>
-            {t('customers.customerDetails')}
-          </Text>
-        </TouchableOpacity>
-        <View style={[getFlexDirection(isRTL), { gap: 12 }]}>
-          {isEditing ? (
-            <>
-              <TouchableOpacity onPress={() => setIsEditing(false)}>
-                <X size={24} color={colors.white} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleSave} disabled={updateCustomer.isPending}>
-                <Save size={24} color={colors.white} />
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <TouchableOpacity onPress={handleEdit}>
-                <Edit2 size={24} color={colors.white} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleDelete}>
-                <Trash2 size={24} color={colors.white} />
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-      </View>
+      <DetailHeader
+        title={t('customers.customerDetails')}
+        isRTL={isRTL}
+        isEditing={isEditing}
+        isSaving={updateCustomer.isPending}
+        onEdit={handleEdit}
+        onSave={handleSave}
+        onCancelEdit={() => setIsEditing(false)}
+        onDelete={handleDelete}
+      />
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {/* Customer Header Card */}
@@ -303,27 +196,25 @@ export default function CustomerDetailScreen() {
             editable={isEditing}
             onChangeText={updateField('id_number')}
           />
-          <View style={[getFlexDirection(isRTL), { alignItems: 'center', marginTop: 8 }]}>
-            <Phone size={16} color={colors.gray[400]} />
-            <Text style={[sharedStyles.subtitle, getMarginStart(isRTL, 8)]}>
-              {displayData.phone_primary}
-            </Text>
-          </View>
+          <InfoRow
+            icon={<Phone size={16} color={colors.gray[400]} />}
+            text={displayData.phone_primary || '-'}
+            isRTL={isRTL}
+            style={{ marginTop: 8 }}
+          />
           {displayData.phone_secondary && (
-            <View style={[getFlexDirection(isRTL), { alignItems: 'center', marginTop: 4 }]}>
-              <Phone size={16} color={colors.gray[400]} />
-              <Text style={[sharedStyles.subtitle, getMarginStart(isRTL, 8)]}>
-                {displayData.phone_secondary}
-              </Text>
-            </View>
+            <InfoRow
+              icon={<Phone size={16} color={colors.gray[400]} />}
+              text={displayData.phone_secondary}
+              isRTL={isRTL}
+            />
           )}
           {displayData.email && (
-            <View style={[getFlexDirection(isRTL), { alignItems: 'center', marginTop: 4 }]}>
-              <Mail size={16} color={colors.gray[400]} />
-              <Text style={[sharedStyles.subtitle, getMarginStart(isRTL, 8)]}>
-                {displayData.email}
-              </Text>
-            </View>
+            <InfoRow
+              icon={<Mail size={16} color={colors.gray[400]} />}
+              text={displayData.email}
+              isRTL={isRTL}
+            />
           )}
         </Section>
 
@@ -458,31 +349,15 @@ export default function CustomerDetailScreen() {
           icon={<FileText size={20} color={colors.primary} />}
           isRTL={isRTL}
         >
-          {isEditing ? (
-            <TextInput
-              style={[
-                sharedStyles.searchInput,
-                {
-                  backgroundColor: colors.gray[50],
-                  borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor: colors.gray[200],
-                  padding: 12,
-                  minHeight: 100,
-                  textAlignVertical: 'top',
-                },
-                getTextAlign(isRTL),
-              ]}
-              value={editData.notes}
-              onChangeText={updateField('notes')}
-              multiline
-              numberOfLines={4}
-            />
-          ) : (
-            <Text style={[sharedStyles.subtitle, getTextAlign(isRTL)]}>
-              {customer.notes || '-'}
-            </Text>
-          )}
+          <Field
+            label=""
+            value={isEditing ? editData.notes : customer.notes}
+            isRTL={isRTL}
+            editable={isEditing}
+            multiline
+            numberOfLines={4}
+            onChangeText={updateField('notes')}
+          />
         </Section>
 
         {/* Customer Projects */}

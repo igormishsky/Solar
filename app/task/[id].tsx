@@ -6,16 +6,11 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
-  Edit2,
-  Save,
-  X,
   ClipboardList,
   User,
   Calendar,
@@ -24,7 +19,6 @@ import {
   CheckCircle2,
   Circle,
   Clock,
-  Trash2,
   ChevronRight,
   Play,
 } from 'lucide-react-native';
@@ -40,28 +34,14 @@ import {
   getPriorityColors,
   getStatusColors,
 } from '@/styles';
-import { TaskStatus, TaskPriority } from '@/types/database.types';
-
-type SectionProps = {
-  title: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  isRTL: boolean;
-};
-
-function Section({ title, icon, children, isRTL }: SectionProps) {
-  return (
-    <View style={[sharedStyles.card, { marginBottom: 16 }]}>
-      <View style={[getFlexDirection(isRTL), { alignItems: 'center', marginBottom: 16 }]}>
-        {icon}
-        <Text style={[sharedStyles.title, getMarginStart(isRTL, 8), { fontSize: 18 }]}>
-          {title}
-        </Text>
-      </View>
-      {children}
-    </View>
-  );
-}
+import {
+  Section,
+  Field,
+  DetailHeader,
+  LoadingScreen,
+  ErrorScreen,
+} from '@/components';
+import { TaskStatus } from '@/types/database.types';
 
 type StatusButtonProps = {
   status: TaskStatus;
@@ -173,21 +153,11 @@ export default function TaskDetailScreen() {
   };
 
   if (isLoading) {
-    return (
-      <SafeAreaView style={[sharedStyles.pageContainer, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </SafeAreaView>
-    );
+    return <LoadingScreen />;
   }
 
   if (error || !task) {
-    return (
-      <SafeAreaView style={sharedStyles.pageContainer}>
-        <View style={sharedStyles.emptyState}>
-          <Text style={sharedStyles.emptyStateText}>{t('errors.notFound')}</Text>
-        </View>
-      </SafeAreaView>
-    );
+    return <ErrorScreen message={t('errors.notFound')} />;
   }
 
   const priorityColors = getPriorityColors(task.priority);
@@ -195,54 +165,16 @@ export default function TaskDetailScreen() {
 
   return (
     <SafeAreaView style={sharedStyles.pageContainer} edges={['top']}>
-      {/* Header */}
-      <View
-        style={[
-          getFlexDirection(isRTL),
-          {
-            backgroundColor: colors.primary,
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          },
-        ]}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={[getFlexDirection(isRTL), { alignItems: 'center' }]}
-        >
-          <ArrowLeft
-            size={24}
-            color={colors.white}
-            style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
-          />
-          <Text style={[{ color: colors.white, fontSize: 18, fontWeight: '600' }, getMarginStart(isRTL, 8)]}>
-            {t('tasks.taskDetails')}
-          </Text>
-        </TouchableOpacity>
-        <View style={[getFlexDirection(isRTL), { gap: 12 }]}>
-          {isEditing ? (
-            <>
-              <TouchableOpacity onPress={() => setIsEditing(false)}>
-                <X size={24} color={colors.white} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleSave} disabled={updateTask.isPending}>
-                <Save size={24} color={colors.white} />
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <TouchableOpacity onPress={handleEdit}>
-                <Edit2 size={24} color={colors.white} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleDelete}>
-                <Trash2 size={24} color={colors.white} />
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-      </View>
+      <DetailHeader
+        title={t('tasks.taskDetails')}
+        isRTL={isRTL}
+        isEditing={isEditing}
+        isSaving={updateTask.isPending}
+        onEdit={handleEdit}
+        onSave={handleSave}
+        onCancelEdit={() => setIsEditing(false)}
+        onDelete={handleDelete}
+      />
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {/* Task Header Card */}
@@ -344,31 +276,15 @@ export default function TaskDetailScreen() {
           icon={<ClipboardList size={20} color={colors.primary} />}
           isRTL={isRTL}
         >
-          {isEditing ? (
-            <TextInput
-              style={[
-                sharedStyles.searchInput,
-                {
-                  backgroundColor: colors.gray[50],
-                  borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor: colors.gray[200],
-                  padding: 12,
-                  minHeight: 100,
-                  textAlignVertical: 'top',
-                },
-                getTextAlign(isRTL),
-              ]}
-              value={editData.description}
-              onChangeText={(text) => setEditData((prev) => ({ ...prev, description: text }))}
-              multiline
-              numberOfLines={4}
-            />
-          ) : (
-            <Text style={[sharedStyles.subtitle, getTextAlign(isRTL)]}>
-              {task.description || '-'}
-            </Text>
-          )}
+          <Field
+            label=""
+            value={isEditing ? editData.description : task.description}
+            isRTL={isRTL}
+            editable={isEditing}
+            multiline
+            numberOfLines={4}
+            onChangeText={(text) => setEditData((prev) => ({ ...prev, description: text }))}
+          />
         </Section>
 
         {/* Due Date */}

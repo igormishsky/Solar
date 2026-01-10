@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   View,
   Text,
@@ -11,7 +10,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  ArrowLeft,
   FileText,
   Plus,
   CheckCircle2,
@@ -28,7 +26,6 @@ import {
   useProjectForms,
   useUpdateFormStatus,
   useInitializeProjectForms,
-  FORM_TYPES,
 } from '@/hooks';
 import {
   sharedStyles,
@@ -37,6 +34,12 @@ import {
   getTextAlign,
   getMarginStart,
 } from '@/styles';
+import {
+  SimpleHeader,
+  LoadingIndicator,
+  EmptyState,
+} from '@/components';
+import { FORM_TYPES } from '@/constants';
 import { FormStatus } from '@/types/database.types';
 
 type Form = {
@@ -182,32 +185,10 @@ export default function ProjectFormsScreen() {
 
   return (
     <SafeAreaView style={sharedStyles.pageContainer} edges={['top']}>
-      {/* Header */}
-      <View
-        style={[
-          getFlexDirection(isRTL),
-          {
-            backgroundColor: colors.primary,
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            alignItems: 'center',
-          },
-        ]}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={[getFlexDirection(isRTL), { alignItems: 'center' }]}
-        >
-          <ArrowLeft
-            size={24}
-            color={colors.white}
-            style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
-          />
-          <Text style={[{ color: colors.white, fontSize: 18, fontWeight: '600' }, getMarginStart(isRTL, 8)]}>
-            {t('nav.forms')}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <SimpleHeader
+        title={t('nav.forms')}
+        isRTL={isRTL}
+      />
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {/* Progress Stats */}
@@ -289,9 +270,7 @@ export default function ProjectFormsScreen() {
 
         {/* Forms List */}
         {isLoading ? (
-          <View style={sharedStyles.emptyState}>
-            <ActivityIndicator size="large" color={colors.primary} />
-          </View>
+          <LoadingIndicator />
         ) : forms.length > 0 ? (
           <>
             <Text style={[sharedStyles.title, getTextAlign(isRTL), { marginBottom: 12 }]}>
@@ -300,15 +279,11 @@ export default function ProjectFormsScreen() {
             {forms.map(renderFormItem)}
           </>
         ) : (
-          <View style={sharedStyles.emptyState}>
-            <FileText size={48} color={colors.gray[300]} />
-            <Text style={sharedStyles.emptyStateText}>
-              {t('forms.noForms')}
-            </Text>
-            <Text style={[sharedStyles.caption, { marginTop: 8, textAlign: 'center' }]}>
-              Click the button above to initialize all required forms for this project
-            </Text>
-          </View>
+          <EmptyState
+            icon={<FileText size={48} color={colors.gray[300]} />}
+            title={t('forms.noForms')}
+            description="Click the button above to initialize all required forms for this project"
+          />
         )}
 
         {/* Form Types Reference */}

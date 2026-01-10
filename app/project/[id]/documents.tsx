@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import {
-  ArrowLeft,
   FileText,
   Upload,
   Trash2,
@@ -32,6 +31,11 @@ import {
   getTextAlign,
   getMarginStart,
 } from '@/styles';
+import {
+  SimpleHeader,
+  LoadingIndicator,
+  EmptyState,
+} from '@/components';
 
 type Document = {
   id: string;
@@ -126,10 +130,7 @@ export default function ProjectDocumentsScreen() {
   const renderDocumentItem = (doc: Document) => (
     <View
       key={doc.id}
-      style={[
-        sharedStyles.card,
-        { marginBottom: 12 },
-      ]}
+      style={[sharedStyles.card, { marginBottom: 12 }]}
     >
       <View style={[getFlexDirection(isRTL), { alignItems: 'center', justifyContent: 'space-between' }]}>
         <View style={[getFlexDirection(isRTL), { alignItems: 'center', flex: 1 }]}>
@@ -169,7 +170,6 @@ export default function ProjectDocumentsScreen() {
               borderRadius: 8,
             }}
             onPress={() => {
-              // In a real app, this would open the document
               Alert.alert('Download', `Opening ${doc.name}`);
             }}
           >
@@ -192,32 +192,10 @@ export default function ProjectDocumentsScreen() {
 
   return (
     <SafeAreaView style={sharedStyles.pageContainer} edges={['top']}>
-      {/* Header */}
-      <View
-        style={[
-          getFlexDirection(isRTL),
-          {
-            backgroundColor: colors.primary,
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            alignItems: 'center',
-          },
-        ]}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={[getFlexDirection(isRTL), { alignItems: 'center' }]}
-        >
-          <ArrowLeft
-            size={24}
-            color={colors.white}
-            style={{ transform: [{ scaleX: isRTL ? -1 : 1 }] }}
-          />
-          <Text style={[{ color: colors.white, fontSize: 18, fontWeight: '600' }, getMarginStart(isRTL, 8)]}>
-            {t('nav.documents')}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <SimpleHeader
+        title={t('nav.documents')}
+        isRTL={isRTL}
+      />
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {/* Upload Button */}
@@ -240,21 +218,15 @@ export default function ProjectDocumentsScreen() {
 
         {/* Documents List */}
         {isLoading ? (
-          <View style={sharedStyles.emptyState}>
-            <ActivityIndicator size="large" color={colors.primary} />
-          </View>
+          <LoadingIndicator />
         ) : documents.length > 0 ? (
           documents.map(renderDocumentItem)
         ) : (
-          <View style={sharedStyles.emptyState}>
-            <FileText size={48} color={colors.gray[300]} />
-            <Text style={sharedStyles.emptyStateText}>
-              No documents yet
-            </Text>
-            <Text style={[sharedStyles.caption, { marginTop: 8, textAlign: 'center' }]}>
-              Upload documents related to this project
-            </Text>
-          </View>
+          <EmptyState
+            icon={<FileText size={48} color={colors.gray[300]} />}
+            title="No documents yet"
+            description="Upload documents related to this project"
+          />
         )}
       </ScrollView>
     </SafeAreaView>

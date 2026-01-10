@@ -1,11 +1,10 @@
 import { Router } from 'express';
-import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { AuthenticatedRequest, requirePermission } from '../middleware/auth';
 import { asyncHandler, AppError } from '../middleware/errorHandler';
+import { supabase, PROFESSIONAL_TYPES } from '../lib';
 
 const router = Router();
-const supabase = createClient(process.env.SUPABASE_URL || '', process.env.SUPABASE_SERVICE_KEY || '');
 
 const professionalSchema = z.object({
   professional_type: z.enum(['installing_company', 'installing_contractor', 'planner', 'inspecting_electrician', 'constructor']),
