@@ -99,12 +99,8 @@ module.exports = {
       fontSize: {
         '2xs': ['0.625rem', { lineHeight: '0.875rem' }],  // 10px
       },
-      // Box shadow (matches design tokens)
-      boxShadow: {
-        'card': '0 1px 2px 0 rgba(0, 0, 0, 0.1)',
-        'card-hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-        'elevated': '0 4px 8px 0 rgba(0, 0, 0, 0.15)',
-      },
+      // Note: Custom boxShadow with rgba() removed - breaks NativeWind parser
+      // Use Tailwind's built-in shadows: shadow-sm, shadow-md, shadow-lg
       // Animation timing
       transitionDuration: {
         'fast': '150ms',

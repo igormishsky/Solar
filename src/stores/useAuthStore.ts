@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
 import { Tables, UserRole } from '@/types/database.types';
 
@@ -31,6 +31,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isInitialized: false,
 
   initialize: async () => {
+    // If Supabase is not configured, just mark as initialized
+    if (!isSupabaseConfigured) {
+      console.warn('Supabase not configured - running in demo mode');
+      set({ isInitialized: true });
+      return;
+    }
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       set({

@@ -1,16 +1,45 @@
 version: '3.8'
 
 services:
-  app:
+  # O.R.I SOLAR Frontend - Production Build
+  solar:
     build:
       context: .
-      args:
-        - EXPO_PUBLIC_SUPABASE_URL=${EXPO_PUBLIC_SUPABASE_URL}
-        - EXPO_PUBLIC_SUPABASE_ANON_KEY=${EXPO_PUBLIC_SUPABASE_ANON_KEY}
-        - EXPO_PUBLIC_APP_NAME=${EXPO_PUBLIC_APP_NAME:-O.R.I SOLAR}
-        - EXPO_PUBLIC_APP_VERSION=${EXPO_PUBLIC_APP_VERSION:-1.0.0}
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    container_name: solar-app
     ports:
-      - "3000:80"
-    restart: unless-stopped
+      - "3001:80"
     environment:
       - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - solar-network
+
+  # O.R.I SOLAR Development Mode - Expo Dev Server
+  solar-dev:
+    image: node:18-alpine
+    platform: linux/amd64
+    container_name: solar-dev
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.expo
+    ports:
+      - "8081:8081"  # Expo Metro bundler
+      - "19000:19000" # Expo dev tools (legacy)
+      - "19001:19001" # Expo dev tools (legacy)
+      - "19002:19002" # Expo dev tools (legacy)
+    command: sh -c "npm install --legacy-peer-deps && npx expo start --web --port 8081"
+    environment:
+      - NODE_ENV=development
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+    profiles:
+      - dev
+    networks:
+      - solar-network
+
+networks:
+  solar-network:
+    driver: bridge

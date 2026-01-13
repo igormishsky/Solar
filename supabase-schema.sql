@@ -317,19 +317,5 @@ CREATE TRIGGER update_forms_updated_at
     BEFORE UPDATE ON forms
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Insert default form templates
-INSERT INTO forms (id, project_id, form_type, form_name, form_name_he, required_signature) VALUES
--- Note: project_id should be set when creating forms for actual projects
--- These are template references only
-('00000000-0000-0000-0000-000000000001', NULL, 'layout_plan', 'Layout Plan + Grounding', 'תוכנית פריסה + הארקה', 'Electrical Engineer'),
-('00000000-0000-0000-0000-000000000002', NULL, 'pv_agreement', 'PV Agreement', 'הסכם PV', 'Customer'),
-('00000000-0000-0000-0000-000000000003', NULL, 'electrician_declaration', 'Executing Electrician Declaration - First Addition', 'הצהרת חשמלאי מבצע – תוספת ראשונה', 'Executing Electrician'),
-('00000000-0000-0000-0000-000000000004', NULL, 'installation_submission', 'Installation Submission for Inspection', 'טופס הגשת מתקן לבדיקה', NULL),
-('00000000-0000-0000-0000-000000000005', NULL, 'inverter_calibration', 'Inverter Calibration Affidavit', 'תצהיר כיול מהפכים', 'Importer/Manufacturer'),
-('00000000-0000-0000-0000-000000000006', NULL, 'constructor_approval', 'Constructor Approval', 'אישור קונסטרוקטור', 'Constructor'),
-('00000000-0000-0000-0000-000000000007', NULL, 'regulation_24', 'Installation Declaration per Regulation 24', 'תצהיר התקנה לפי תקנה 24', 'Inspecting Electrician'),
-('00000000-0000-0000-0000-000000000008', NULL, 'pv_inspection', 'PV Installation Inspection Form - Second Addition', 'טופס בדיקת מתקן פוטו-וולטאי – תוספת שנייה', NULL),
-('00000000-0000-0000-0000-000000000009', NULL, 'form_1400', 'Form 1400', 'טופס 1400', 'Installation Owner'),
-('00000000-0000-0000-0000-000000000010', NULL, 'permit_exempt', 'Permit-Exempt Work Report', 'דיווח על עבודה פטורה מהיתר', NULL),
-('00000000-0000-0000-0000-000000000011', NULL, 'threshold_compliance', 'Central Form for Threshold Compliance', 'טופס מרכז לעמידה בתנאי סף', 'Supplier, Owner, Installing Company')
-ON CONFLICT DO NOTHING;
+-- Note: Form templates should be inserted with actual project_id
+-- Template inserts removed due to NOT NULL constraint on project_id
