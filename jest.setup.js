@@ -68,6 +68,41 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );
 
+// Mock lucide-react-native icons
+jest.mock('lucide-react-native', () => {
+  const { View } = require('react-native');
+  const createMockIcon = (name) => {
+    const MockIcon = (props) => View;
+    MockIcon.displayName = name;
+    return MockIcon;
+  };
+  return {
+    AlertCircle: createMockIcon('AlertCircle'),
+    RefreshCw: createMockIcon('RefreshCw'),
+    ChevronDown: createMockIcon('ChevronDown'),
+    ChevronUp: createMockIcon('ChevronUp'),
+    ChevronRight: createMockIcon('ChevronRight'),
+    Clock: createMockIcon('Clock'),
+    CheckCircle2: createMockIcon('CheckCircle2'),
+    FolderKanban: createMockIcon('FolderKanban'),
+    TrendingUp: createMockIcon('TrendingUp'),
+    Sun: createMockIcon('Sun'),
+    Calendar: createMockIcon('Calendar'),
+    Save: createMockIcon('Save'),
+    Send: createMockIcon('Send'),
+  };
+});
+
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => {
+  const { View } = require('react-native');
+  return {
+    SafeAreaProvider: ({ children }) => children,
+    SafeAreaView: ({ children, style }) => View({ style, children }),
+    useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  };
+});
+
 // Silence console warnings in tests
 global.console = {
   ...console,
