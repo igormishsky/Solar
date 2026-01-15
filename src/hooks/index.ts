@@ -7,3 +7,5 @@ export * from './useDocuments';
 export * from './useForms';
 export * from './usePermissions';
 export * from './useMonitoring';
+export * from './useAuditLogs';
+export * from './useNotifications';

@@ -93,6 +93,8 @@ CREATE TABLE IF NOT EXISTS projects (
     panel_count INTEGER,
     inverter_model TEXT,
     estimated_annual_production DECIMAL(10, 2), -- kWh
+    -- Monitoring configuration
+    monitoring_config JSONB, -- { provider: 'solaredge'|'enphase', systemId: string, apiKey?: string }
     -- Timeline
     start_date DATE,
     estimated_completion_date DATE,
@@ -168,10 +170,20 @@ CREATE TABLE IF NOT EXISTS forms (
     form_name TEXT NOT NULL,
     form_name_he TEXT NOT NULL, -- Hebrew name
     status form_status DEFAULT 'draft',
+    form_data JSONB, -- Actual form field data
+    form_version INTEGER DEFAULT 1, -- Track form versions
     required_signature TEXT, -- Who needs to sign
     signed_by TEXT,
     signed_at TIMESTAMP WITH TIME ZONE,
+    signature_data TEXT, -- Base64 encoded signature image
     document_url TEXT,
+    submitted_by UUID REFERENCES users(id),
+    submitted_at TIMESTAMP WITH TIME ZONE,
+    approved_by UUID REFERENCES users(id),
+    approved_at TIMESTAMP WITH TIME ZONE,
+    rejected_by UUID REFERENCES users(id),
+    rejected_at TIMESTAMP WITH TIME ZONE,
+    rejection_reason TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -315,6 +327,78 @@ CREATE TRIGGER update_tasks_updated_at
 
 CREATE TRIGGER update_forms_updated_at
     BEFORE UPDATE ON forms
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Audit logs table for tracking all user actions
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    action VARCHAR(50) NOT NULL,
+    entity_type VARCHAR(50) NOT NULL,
+    entity_id UUID NOT NULL,
+    old_values JSONB,
+    new_values JSONB,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    metadata JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Indexes for audit logs
+CREATE INDEX idx_audit_logs_user ON audit_logs(user_id);
+CREATE INDEX idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
+CREATE INDEX idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX idx_audit_logs_created ON audit_logs(created_at);
+
+-- Enable RLS for audit logs
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for audit logs (only admins and managers can view)
+CREATE POLICY "Admins can view audit logs"
+    ON audit_logs FOR SELECT
+    TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM users
+            WHERE users.id = auth.uid()
+            AND users.role IN ('administrator', 'manager')
+        )
+    );
+
+-- Notification preferences table
+CREATE TABLE IF NOT EXISTS notification_preferences (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    task_assigned BOOLEAN DEFAULT TRUE,
+    project_status BOOLEAN DEFAULT TRUE,
+    form_approved BOOLEAN DEFAULT TRUE,
+    form_rejected BOOLEAN DEFAULT TRUE,
+    license_expiry BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id)
+);
+
+-- Index for notification preferences
+CREATE INDEX idx_notification_preferences_user ON notification_preferences(user_id);
+
+-- Enable RLS for notification preferences
+ALTER TABLE notification_preferences ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for notification preferences (users can only view/update their own)
+CREATE POLICY "Users can view own notification preferences"
+    ON notification_preferences FOR SELECT
+    TO authenticated
+    USING (user_id = auth.uid());
+
+CREATE POLICY "Users can update own notification preferences"
+    ON notification_preferences FOR ALL
+    TO authenticated
+    USING (user_id = auth.uid());
+
+-- Trigger to update updated_at for notification preferences
+CREATE TRIGGER update_notification_preferences_updated_at
+    BEFORE UPDATE ON notification_preferences
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Note: Form templates should be inserted with actual project_id

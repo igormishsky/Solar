@@ -3,7 +3,12 @@ import { supabase } from '@/lib/supabase';
 import { queryKeys } from '@/lib/queryKeys';
 import { Tables, InsertTables } from '@/types/database.types';
 
-type Document = Tables<'documents'>;
+type Document = Tables<'documents'> & {
+  uploaded_by_user?: {
+    email: string;
+    full_name: string | null;
+  } | null;
+};
 type DocumentInsert = InsertTables<'documents'>;
 
 interface DocumentFilters {
@@ -13,9 +18,11 @@ interface DocumentFilters {
 
 export function useDocuments(filters?: DocumentFilters) {
   return useQuery({
-    queryKey: ['documents', filters],
+    queryKey: queryKeys.documents.list(filters),
     queryFn: async () => {
-      let query = supabase.from('documents').select('*');
+      let query = supabase
+        .from('documents')
+        .select('*, uploaded_by_user:uploaded_by(email, full_name)');
 
       if (filters?.project_id) {
         query = query.eq('project_id', filters.project_id);
@@ -38,7 +45,7 @@ export function useDocument(id: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('documents')
-        .select('*')
+        .select('*, uploaded_by_user:uploaded_by(email, full_name)')
         .eq('id', id)
         .single();
 
@@ -51,11 +58,11 @@ export function useDocument(id: string) {
 
 export function useProjectDocuments(projectId: string) {
   return useQuery({
-    queryKey: ['documents', 'project', projectId],
+    queryKey: queryKeys.documents.byProject(projectId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('documents')
-        .select('*')
+        .select('*, uploaded_by_user:uploaded_by(email, full_name)')
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
 
@@ -68,11 +75,11 @@ export function useProjectDocuments(projectId: string) {
 
 export function useCustomerDocuments(customerId: string) {
   return useQuery({
-    queryKey: ['documents', 'customer', customerId],
+    queryKey: queryKeys.documents.byCustomer(customerId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('documents')
-        .select('*')
+        .select('*, uploaded_by_user:uploaded_by(email, full_name)')
         .eq('customer_id', customerId)
         .order('created_at', { ascending: false });
 
@@ -83,38 +90,43 @@ export function useCustomerDocuments(customerId: string) {
   });
 }
 
+interface UploadFileParams {
+  file: {
+    uri: string;
+    type: string;
+    name: string;
+    size?: number;
+  };
+  name?: string;
+  projectId?: string;
+  customerId?: string;
+}
+
 export function useUploadDocument() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      file,
-      name,
-      projectId,
-      customerId,
-      uploadedBy,
-    }: {
-      file: { uri: string; type: string; name: string };
-      name: string;
-      projectId?: string;
-      customerId?: string;
-      uploadedBy?: string;
-    }) => {
+    mutationFn: async ({ file, name, projectId, customerId }: UploadFileParams) => {
       // Upload file to Supabase storage
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `documents/${fileName}`;
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+      const folderPath = projectId
+        ? `projects/${projectId}`
+        : customerId
+          ? `customers/${customerId}`
+          : 'general';
+      const filePath = `${folderPath}/${fileName}`;
 
-      const formData = new FormData();
-      formData.append('file', {
-        uri: file.uri,
-        type: file.type,
-        name: fileName,
-      } as any);
+      // Fetch the file and convert to blob
+      const response = await fetch(file.uri);
+      const blob = await response.blob();
 
       const { error: uploadError } = await supabase.storage
         .from('documents')
-        .upload(filePath, formData);
+        .upload(filePath, blob, {
+          contentType: file.type,
+          cacheControl: '3600',
+        });
 
       if (uploadError) throw uploadError;
 
@@ -123,30 +135,34 @@ export function useUploadDocument() {
         .from('documents')
         .getPublicUrl(filePath);
 
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+
       // Create document record
       const { data, error } = await supabase
         .from('documents')
         .insert({
-          name,
+          name: name || file.name,
           file_url: urlData.publicUrl,
           file_type: file.type,
-          project_id: projectId,
-          customer_id: customerId,
-          uploaded_by: uploadedBy,
+          file_size: file.size || null,
+          project_id: projectId || null,
+          customer_id: customerId || null,
+          uploaded_by: user?.id || null,
         })
-        .select()
+        .select('*, uploaded_by_user:uploaded_by(email, full_name)')
         .single();
 
       if (error) throw error;
       return data as Document;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.documents.all });
       if (variables.projectId) {
-        queryClient.invalidateQueries({ queryKey: ['documents', 'project', variables.projectId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.documents.byProject(variables.projectId) });
       }
       if (variables.customerId) {
-        queryClient.invalidateQueries({ queryKey: ['documents', 'customer', variables.customerId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.documents.byCustomer(variables.customerId) });
       }
     },
   });
@@ -157,11 +173,54 @@ export function useDeleteDocument() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      // Get document first to delete from storage
+      const { data: document, error: fetchError } = await supabase
+        .from('documents')
+        .select('file_url')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Extract file path from URL and delete from storage
+      if (document?.file_url) {
+        try {
+          const url = new URL(document.file_url);
+          const pathParts = url.pathname.split('/storage/v1/object/public/documents/');
+          if (pathParts.length > 1) {
+            const filePath = pathParts[1];
+            await supabase.storage.from('documents').remove([filePath]);
+          }
+        } catch (e) {
+          // Ignore storage deletion errors
+          console.warn('Failed to delete file from storage:', e);
+        }
+      }
+
+      // Delete document record
       const { error } = await supabase.from('documents').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.documents.all });
     },
+  });
+}
+
+// Hook to get a download URL for a document (handles both public and presigned URLs)
+export function useDocumentDownloadUrl(documentId: string) {
+  return useQuery({
+    queryKey: ['documents', 'download', documentId],
+    queryFn: async () => {
+      const { data: document, error } = await supabase
+        .from('documents')
+        .select('file_url')
+        .eq('id', documentId)
+        .single();
+
+      if (error) throw error;
+      return document?.file_url || null;
+    },
+    enabled: !!documentId,
   });
 }

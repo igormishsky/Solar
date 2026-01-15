@@ -15,3 +15,11 @@ export { TaskItem } from './TaskItem';
 // Core UI primitives
 export { Button } from './Button';
 export { Badge, PriorityBadge, StatusBadge } from './Badge';
+
+// Audit log components
+export { AuditLogItem } from './AuditLogItem';
+export { EntityHistory } from './EntityHistory';
+
+// File and document components
+export { FileUpload } from './FileUpload';
+export { DocumentList } from './DocumentList';

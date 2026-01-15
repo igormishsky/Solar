@@ -28,6 +28,29 @@ export type ProfessionalType =
 export type UserRole = 'administrator' | 'manager' | 'office_staff' | 'field_technician' | 'viewer';
 export type FormStatus = 'draft' | 'review' | 'signature_pending' | 'submitted' | 'approved' | 'rejected';
 
+export type AuditAction =
+  | 'CREATE'
+  | 'UPDATE'
+  | 'DELETE'
+  | 'STATUS_CHANGE'
+  | 'LOGIN'
+  | 'LOGOUT'
+  | 'PERMISSION_CHANGE'
+  | 'FILE_UPLOAD'
+  | 'FILE_DELETE'
+  | 'FORM_SUBMIT'
+  | 'FORM_APPROVE'
+  | 'FORM_REJECT';
+
+export type EntityType =
+  | 'customer'
+  | 'project'
+  | 'task'
+  | 'professional'
+  | 'form'
+  | 'document'
+  | 'user';
+
 export interface Database {
   public: {
     Tables: {
@@ -173,6 +196,7 @@ export interface Database {
           panel_count: number | null;
           inverter_model: string | null;
           estimated_annual_production: number | null;
+          monitoring_config: Json | null;
           start_date: string | null;
           estimated_completion_date: string | null;
           actual_completion_date: string | null;
@@ -190,6 +214,7 @@ export interface Database {
           panel_count?: number | null;
           inverter_model?: string | null;
           estimated_annual_production?: number | null;
+          monitoring_config?: Json | null;
           start_date?: string | null;
           estimated_completion_date?: string | null;
           actual_completion_date?: string | null;
@@ -207,6 +232,7 @@ export interface Database {
           panel_count?: number | null;
           inverter_model?: string | null;
           estimated_annual_production?: number | null;
+          monitoring_config?: Json | null;
           start_date?: string | null;
           estimated_completion_date?: string | null;
           actual_completion_date?: string | null;
@@ -445,6 +471,47 @@ export interface Database {
           assigned_at?: string;
         };
       };
+      audit_logs: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          action: AuditAction;
+          entity_type: EntityType;
+          entity_id: string;
+          old_values: Json | null;
+          new_values: Json | null;
+          ip_address: string | null;
+          user_agent: string | null;
+          metadata: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          action: AuditAction;
+          entity_type: EntityType;
+          entity_id: string;
+          old_values?: Json | null;
+          new_values?: Json | null;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          metadata?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          action?: AuditAction;
+          entity_type?: EntityType;
+          entity_id?: string;
+          old_values?: Json | null;
+          new_values?: Json | null;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          metadata?: Json | null;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -461,6 +528,8 @@ export interface Database {
       professional_type: ProfessionalType;
       user_role: UserRole;
       form_status: FormStatus;
+      audit_action: AuditAction;
+      entity_type: EntityType;
     };
   };
 }

@@ -89,6 +89,15 @@ export const queryKeys = {
       ['monitoring', 'performance', systemId, range] as const,
     alerts: ['monitoring', 'alerts'] as const,
   },
+
+  // Audit Logs
+  audit: {
+    all: ['audit'] as const,
+    list: (filters?: object) => ['audit', 'list', filters] as const,
+    entity: (entityType: string, entityId: string) => ['audit', 'entity', entityType, entityId] as const,
+    user: (userId: string, page?: number) => ['audit', 'user', userId, page] as const,
+    stats: (days?: number) => ['audit', 'stats', days] as const,
+  },
 };
 
 /**
