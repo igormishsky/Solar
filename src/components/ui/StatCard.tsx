@@ -1,3 +1,4 @@
+import React, { memo } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, ViewStyle } from 'react-native';
 import {
   colors,
@@ -24,8 +25,9 @@ type StatCardProps = {
 /**
  * A reusable stat card component for displaying key metrics.
  * Used in dashboards and overview screens.
+ * Memoized to prevent unnecessary re-renders.
  */
-export function StatCard({
+function StatCardComponent({
   title,
   value,
   icon,
@@ -110,3 +112,6 @@ export function StatCard({
     </TouchableOpacity>
   );
 }
+
+// Memoize to prevent unnecessary re-renders in dashboards
+export const StatCard = memo(StatCardComponent);

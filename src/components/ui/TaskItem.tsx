@@ -1,3 +1,4 @@
+import React, { memo, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ViewStyle } from 'react-native';
 import { ChevronRight, Clock } from 'lucide-react-native';
 import {
@@ -28,16 +29,20 @@ type TaskItemProps = {
 /**
  * A reusable task item component for displaying tasks in lists.
  * Shows priority indicator, title, due date with overdue highlighting.
+ * Memoized to prevent unnecessary re-renders in lists.
  */
-export function TaskItem({
+function TaskItemComponent({
   task,
   isRTL,
   onPress,
   priorityLabels,
   style,
 }: TaskItemProps) {
-  const priorityColors = getPriorityColors(task.priority);
-  const isOverdue = task.due_date && new Date(task.due_date) < new Date();
+  const priorityColors = useMemo(() => getPriorityColors(task.priority), [task.priority]);
+  const isOverdue = useMemo(
+    () => task.due_date && new Date(task.due_date) < new Date(),
+    [task.due_date]
+  );
   const priorityLabel = priorityLabels?.[task.priority] || task.priority;
 
   return (
@@ -144,3 +149,6 @@ export function TaskItem({
     </TouchableOpacity>
   );
 }
+
+// Memoize to prevent unnecessary re-renders when parent updates
+export const TaskItem = memo(TaskItemComponent);

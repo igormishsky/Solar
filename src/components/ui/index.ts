@@ -4,6 +4,7 @@ export { Field } from './Field';
 export { DetailHeader, SimpleHeader } from './DetailHeader';
 export { LoadingScreen, LoadingIndicator } from './LoadingScreen';
 export { ErrorScreen, ErrorMessage } from './ErrorScreen';
+export { ErrorBoundary, InlineErrorBoundary } from './ErrorBoundary';
 export { EmptyState } from './EmptyState';
 export { InfoRow } from './InfoRow';
 
