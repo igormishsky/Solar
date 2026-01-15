@@ -1,101 +1,73 @@
 import { useMemo } from 'react';
 import { useAuthStore } from '@/stores/useAuthStore';
-import {
-  Permission,
-  hasPermission,
-  hasAllPermissions,
-  hasAnyPermission,
-  isAdmin,
-  canManageUsers,
-  canApproveForms,
-  canExportReports,
-  canDelete,
-} from '@/lib/permissions';
+import { Permission, hasPermission, hasAllPermissions, hasAnyPermission, isAdmin } from '@/lib/permissions';
 import { UserRole } from '@/types/database.types';
 
 export function usePermissions() {
   const profile = useAuthStore((state) => state.profile);
   const role = profile?.role as UserRole | undefined;
 
-  return useMemo(
-    () => ({
-      // Current user role
-      role,
+  return useMemo(() => {
+    const can = (permission: Permission) => hasPermission(role, permission);
 
-      // Permission checks
-      can: (permission: Permission) => hasPermission(role, permission),
+    return {
+      role,
+      can,
       canAll: (permissions: Permission[]) => hasAllPermissions(role, permissions),
       canAny: (permissions: Permission[]) => hasAnyPermission(role, permissions),
-
-      // Convenience checks
       isAdmin: isAdmin(role),
-      canManageUsers: canManageUsers(role),
-      canApproveForms: canApproveForms(role),
-      canExportReports: canExportReports(role),
-      canDeleteCustomers: canDelete(role, 'customers'),
-      canDeleteProjects: canDelete(role, 'projects'),
-      canDeleteTasks: canDelete(role, 'tasks'),
-      canDeleteProfessionals: canDelete(role, 'professionals'),
-      canDeleteDocuments: canDelete(role, 'documents'),
 
-      // Resource-specific permissions
+      // Resource permissions - computed on demand via can()
       customers: {
-        read: hasPermission(role, 'customers:read'),
-        create: hasPermission(role, 'customers:create'),
-        update: hasPermission(role, 'customers:update'),
-        delete: hasPermission(role, 'customers:delete'),
+        read: can('customers:read'),
+        create: can('customers:create'),
+        update: can('customers:update'),
+        delete: can('customers:delete'),
       },
       projects: {
-        read: hasPermission(role, 'projects:read'),
-        create: hasPermission(role, 'projects:create'),
-        update: hasPermission(role, 'projects:update'),
-        delete: hasPermission(role, 'projects:delete'),
+        read: can('projects:read'),
+        create: can('projects:create'),
+        update: can('projects:update'),
+        delete: can('projects:delete'),
       },
       tasks: {
-        read: hasPermission(role, 'tasks:read'),
-        create: hasPermission(role, 'tasks:create'),
-        update: hasPermission(role, 'tasks:update'),
-        delete: hasPermission(role, 'tasks:delete'),
+        read: can('tasks:read'),
+        create: can('tasks:create'),
+        update: can('tasks:update'),
+        delete: can('tasks:delete'),
       },
       professionals: {
-        read: hasPermission(role, 'professionals:read'),
-        create: hasPermission(role, 'professionals:create'),
-        update: hasPermission(role, 'professionals:update'),
-        delete: hasPermission(role, 'professionals:delete'),
+        read: can('professionals:read'),
+        create: can('professionals:create'),
+        update: can('professionals:update'),
+        delete: can('professionals:delete'),
       },
       documents: {
-        read: hasPermission(role, 'documents:read'),
-        upload: hasPermission(role, 'documents:upload'),
-        delete: hasPermission(role, 'documents:delete'),
+        read: can('documents:read'),
+        upload: can('documents:upload'),
+        delete: can('documents:delete'),
       },
       forms: {
-        read: hasPermission(role, 'forms:read'),
-        update: hasPermission(role, 'forms:update'),
-        approve: hasPermission(role, 'forms:approve'),
+        read: can('forms:read'),
+        update: can('forms:update'),
+        approve: can('forms:approve'),
       },
       reports: {
-        view: hasPermission(role, 'reports:view'),
-        export: hasPermission(role, 'reports:export'),
+        view: can('reports:view'),
+        export: can('reports:export'),
       },
       settings: {
-        view: hasPermission(role, 'settings:view'),
-        update: hasPermission(role, 'settings:update'),
+        view: can('settings:view'),
+        update: can('settings:update'),
       },
       users: {
-        read: hasPermission(role, 'users:read'),
-        create: hasPermission(role, 'users:create'),
-        update: hasPermission(role, 'users:update'),
-        delete: hasPermission(role, 'users:delete'),
+        read: can('users:read'),
+        create: can('users:create'),
+        update: can('users:update'),
+        delete: can('users:delete'),
       },
-    }),
-    [role]
-  );
-}
-
-// Component wrapper for permission-based rendering
-export function useRequirePermission(permission: Permission): boolean {
-  const { can } = usePermissions();
-  return can(permission);
+    };
+  }, [role]);
 }
 
 // Hook to check if user can perform action on own resources only

@@ -10,19 +10,6 @@ import type {
   MonitoringConfig,
 } from '@/types/monitoring.types';
 
-// Re-export types for consumers
-export type {
-  SystemStatus,
-  SystemAlert,
-  HistoricalData,
-  PerformanceData,
-  MonitoredSystem,
-  MonitoringStats,
-  MonitoringConfig,
-  MonitoringResolution,
-  MonitoringProvider,
-} from '@/types/monitoring.types';
-
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 // Helper to fetch from monitoring API

@@ -4,10 +4,6 @@ import {
   hasAnyPermission,
   getRolePermissions,
   isAdmin,
-  canManageUsers,
-  canApproveForms,
-  canExportReports,
-  canDelete,
 } from '../lib/permissions';
 import { UserRole } from '../types/database.types';
 
@@ -96,65 +92,6 @@ describe('Permission Functions', () => {
 
     it('should return false for undefined', () => {
       expect(isAdmin(undefined)).toBe(false);
-    });
-  });
-
-  describe('canManageUsers', () => {
-    it('should return true for administrator', () => {
-      expect(canManageUsers('administrator')).toBe(true);
-    });
-
-    it('should return false for manager', () => {
-      expect(canManageUsers('manager')).toBe(false);
-    });
-  });
-
-  describe('canApproveForms', () => {
-    it('should return true for administrator', () => {
-      expect(canApproveForms('administrator')).toBe(true);
-    });
-
-    it('should return true for manager', () => {
-      expect(canApproveForms('manager')).toBe(true);
-    });
-
-    it('should return false for viewer', () => {
-      expect(canApproveForms('viewer')).toBe(false);
-    });
-  });
-
-  describe('canExportReports', () => {
-    it('should return true for administrator', () => {
-      expect(canExportReports('administrator')).toBe(true);
-    });
-
-    it('should return true for manager', () => {
-      expect(canExportReports('manager')).toBe(true);
-    });
-
-    it('should return false for viewer', () => {
-      expect(canExportReports('viewer')).toBe(false);
-    });
-  });
-
-  describe('canDelete', () => {
-    it('should return true for administrator on any resource', () => {
-      expect(canDelete('administrator', 'customers')).toBe(true);
-      expect(canDelete('administrator', 'projects')).toBe(true);
-      expect(canDelete('administrator', 'tasks')).toBe(true);
-    });
-
-    it('should return false for viewer on any resource', () => {
-      expect(canDelete('viewer', 'customers')).toBe(false);
-      expect(canDelete('viewer', 'projects')).toBe(false);
-    });
-
-    it('should return true for manager on tasks', () => {
-      expect(canDelete('manager', 'tasks')).toBe(true);
-    });
-
-    it('should return false for manager on customers', () => {
-      expect(canDelete('manager', 'customers')).toBe(false);
     });
   });
 });

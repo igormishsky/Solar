@@ -115,27 +115,7 @@ export function getRolePermissions(role: UserRole): Permission[] {
   return ROLE_PERMISSIONS[role] || [];
 }
 
-// Check if role can access admin features
+// Check if role is administrator
 export function isAdmin(role: UserRole | undefined): boolean {
   return role === 'administrator';
-}
-
-// Check if role can manage users
-export function canManageUsers(role: UserRole | undefined): boolean {
-  return hasPermission(role, 'users:create');
-}
-
-// Check if role can approve forms
-export function canApproveForms(role: UserRole | undefined): boolean {
-  return hasPermission(role, 'forms:approve');
-}
-
-// Check if role can export reports
-export function canExportReports(role: UserRole | undefined): boolean {
-  return hasPermission(role, 'reports:export');
-}
-
-// Check if role can delete items
-export function canDelete(role: UserRole | undefined, resource: 'customers' | 'projects' | 'tasks' | 'professionals' | 'documents'): boolean {
-  return hasPermission(role, `${resource}:delete` as Permission);
 }
