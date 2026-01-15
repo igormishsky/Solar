@@ -15,6 +15,8 @@ import formsRouter from './routes/forms';
 import documentsRouter from './routes/documents';
 import reportsRouter from './routes/reports';
 import healthRouter from './routes/health';
+import auditRouter from './routes/audit';
+import notificationsRouter from './routes/notifications';
 
 dotenv.config();
 
@@ -55,6 +57,8 @@ app.use('/api/professionals', authMiddleware, professionalsRouter);
 app.use('/api/forms', authMiddleware, formsRouter);
 app.use('/api/documents', authMiddleware, documentsRouter);
 app.use('/api/reports', authMiddleware, reportsRouter);
+app.use('/api/audit', authMiddleware, auditRouter);
+app.use('/api/notifications', authMiddleware, notificationsRouter);
 
 // Error handling
 app.use(errorHandler);
